@@ -26,17 +26,15 @@ import (
 	"racelogctl/internal"
 	"racelogctl/wamp"
 	"strconv"
-	"time"
 
 	"github.com/spf13/cobra"
 )
 
-// infoCmd represents the info command
-var infoCmd = &cobra.Command{
-	Use:   "info <eventId>",
-	Short: "Get information about an event",
+// stateCmd represents the state command
+var stateCmd = &cobra.Command{
+	Use:   "states",
+	Short: "Retrieves state data from server",
 	Long:  ``,
-
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 			eventId, err := strconv.Atoi(args[0])
@@ -44,58 +42,34 @@ var infoCmd = &cobra.Command{
 				fmt.Println(err)
 				return
 			} else {
-				eventInfo(eventId)
+				fetchStates(eventId)
 			}
 		} else {
 			fmt.Println("requires an event id")
 		}
-
 	},
 }
 
 func init() {
-	eventCmd.AddCommand(infoCmd)
+	eventCmd.AddCommand(stateCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-
-	// infoCmd.PersistentFlags().IntVar(&internal.EventId, "id", -1, "the event id to fetch")
+	stateCmd.PersistentFlags().IntVar(&internal.From, "from", 0, "Fetch states beginning from timestamp (Default: 0=first available entry)")
+	stateCmd.PersistentFlags().IntVar(&internal.Num, "num", 10, "How many states should be fetches in one request")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// infoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// stateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func eventInfo(id int) {
-
-	event := wamp.GetEvent(id)
-	if event == nil {
-		fmt.Printf("No event found for %v\n", id)
-		return
+func fetchStates(eventId int) {
+	fmt.Printf("Fetching %d states beginning at %d\n", internal.Num, internal.From)
+	states := wamp.GetStates(eventId, internal.From, internal.Num)
+	fmt.Printf("\n---\nresulting states\n")
+	for i, entry := range states {
+		fmt.Printf("%d, %+v\n", i, entry)
 	}
-	fmt.Printf("%+v\n", event)
-	printEvent(event)
-}
-
-func printEvent(e *internal.Event) {
-	recDate, _ := time.Parse("2006-01-02T15:04:05", e.RecordDate)
-	time.Unix(int64(e.Data.ReplayInfo.MinTimestamp), 0)
-	minSession, _ := time.ParseDuration(fmt.Sprintf("%.0fs", e.Data.ReplayInfo.MinSessionTime))
-	maxSession, _ := time.ParseDuration(fmt.Sprintf("%.0fs", e.Data.ReplayInfo.MaxSessionTime))
-	fmt.Printf(`Id: %v (Key: %v)
-Name: %v
-Recorded: %s (racelogger: %s)
-Track: %v
-Session begin: %s %.0f
-Session end: %s %.0f
-Race begin (UTC): %s (%d)
-	`, e.Id, e.EventKey,
-		e.Name,
-		recDate.Format("2006-01-02 15:04"), e.Data.Info.RaceloggerVersion,
-		e.Data.Info.TrackDisplayName,
-		minSession.String(), e.Data.ReplayInfo.MinSessionTime,
-		maxSession.String(), e.Data.ReplayInfo.MaxSessionTime,
-		time.Unix(int64(e.Data.ReplayInfo.MinTimestamp), 0).Format("2006-01-02 15:04"), int64(e.Data.ReplayInfo.MinTimestamp))
 }

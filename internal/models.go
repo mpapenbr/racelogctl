@@ -26,3 +26,12 @@ type Event struct {
 
 	Id int32
 }
+
+type Payload struct {
+	Cars    [][]interface{}
+	Session []interface{}
+}
+type State struct {
+	Type    int // 1: full data, 8: delta data
+	Payload Payload
+}

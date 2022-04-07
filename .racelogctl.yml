@@ -1,2 +1,3 @@
 realm: racelog
-url: ws://host.docker.internal:8091/ws
+#url: ws://host.docker.internal:8091/ws
+url: wss://crossbar.leipert-esports.de/ws
