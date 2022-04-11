@@ -12,10 +12,15 @@ type ReplayInfo struct {
 	MinSessionTime float64
 	MaxSessionTime float64
 }
-
+type Manifests struct {
+	Car     []string
+	Session []string
+	Message []string
+}
 type Data struct {
 	Info       EventInfo
 	ReplayInfo ReplayInfo
+	Manifests  Manifests
 }
 
 type Event struct {
@@ -28,10 +33,12 @@ type Event struct {
 }
 
 type Payload struct {
-	Cars    [][]interface{}
-	Session []interface{}
+	Cars     [][]interface{} `json:"cars"`
+	Session  []interface{}   `json:"session"`
+	Messages [][]interface{} `json:"messages"`
 }
 type State struct {
-	Type    int // 1: full data, 8: delta data
-	Payload Payload
+	Type      int     `json:"type"` // 1: full data, 8: delta data
+	Payload   Payload `json:"payload"`
+	Timestamp float64 `json:"timestamp"`
 }

@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"racelogctl/internal"
 	"racelogctl/wamp"
@@ -60,6 +61,8 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
+	eventCmd.PersistentFlags().StringVar(&internal.OutputFormat, "format", "text", "Output format: text|json. (Default: text)")
+	eventCmd.PersistentFlags().BoolVar(&internal.JsonPretty, "pretty", false, "use pretty json format. (Default: false)")
 
 	// infoCmd.PersistentFlags().IntVar(&internal.EventId, "id", -1, "the event id to fetch")
 
@@ -75,8 +78,13 @@ func eventInfo(id int) {
 		fmt.Printf("No event found for %v\n", id)
 		return
 	}
-	fmt.Printf("%+v\n", event)
-	printEvent(event)
+	// fmt.Printf("%+v\n", event)
+	switch internal.OutputFormat {
+	case "json":
+		printJson(event)
+	default:
+		printEvent(event)
+	}
 }
 
 func printEvent(e *internal.Event) {
@@ -90,12 +98,24 @@ Recorded: %s (racelogger: %s)
 Track: %v
 Session begin: %s %.0f
 Session end: %s %.0f
-Race begin (UTC): %s (%d)
-	`, e.Id, e.EventKey,
+Race begin (UTC): %s (%d)`,
+		e.Id, e.EventKey,
 		e.Name,
 		recDate.Format("2006-01-02 15:04"), e.Data.Info.RaceloggerVersion,
 		e.Data.Info.TrackDisplayName,
 		minSession.String(), e.Data.ReplayInfo.MinSessionTime,
 		maxSession.String(), e.Data.ReplayInfo.MaxSessionTime,
 		time.Unix(int64(e.Data.ReplayInfo.MinTimestamp), 0).Format("2006-01-02 15:04"), int64(e.Data.ReplayInfo.MinTimestamp))
+}
+
+func printJson(e *internal.Event) {
+	var s string = ""
+	if internal.JsonPretty {
+		jsonData, _ := json.MarshalIndent(e, "", "  ")
+		s = string(jsonData)
+	} else {
+		jsonData, _ := json.Marshal(e)
+		s = string(jsonData)
+	}
+	fmt.Printf("%s\n", s)
 }
