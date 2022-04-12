@@ -1,0 +1,69 @@
+{
+    "EventKey": "7ce645397df54fd3e1d3cc0a3df0f896",
+    "Name": "Circuit of the Americas 2022-03-17-1856",
+    "RecordDate": "2022-03-17T18:56:35.670720",
+    "Data": {
+        "Info": {
+            "RaceloggerVersion": "0.4.0",
+            "Name": "Circuit of the Americas 2022-03-17-1856",
+            "EventTime": "2022-05-15T13:43:00",
+            "TrackDisplayName": "Circuit of the Americas"
+        },
+        "ReplayInfo": {
+            "MinTimestamp": 1647539975.088944,
+            "MinSessionTime": 1,
+            "MaxSessionTime": 1
+        },
+        "Manifests": {
+            "Car": [
+                "state",
+                "carIdx",
+                "carNum",
+                "userName",
+                "teamName",
+                "car",
+                "carClass",
+                "pos",
+                "pic",
+                "lap",
+                "lc",
+                "gap",
+                "interval",
+                "trackPos",
+                "speed",
+                "dist",
+                "pitstops",
+                "stintLap",
+                "last",
+                "best",
+                "s1",
+                "s2",
+                "s3",
+                "s4"
+            ],
+            "Session": [
+                "sessionNum",
+                "sessionTime",
+                "timeRemain",
+                "lapsRemain",
+                "flagState",
+                "timeOfDay",
+                "airTemp",
+                "airDensity",
+                "airPressure",
+                "trackTemp",
+                "windDir",
+                "windVel"
+            ],
+            "Message": [
+                "type",
+                "subType",
+                "carIdx",
+                "carNum",
+                "carClass",
+                "msg"
+            ]
+        }
+    },
+    "Id": 21
+}

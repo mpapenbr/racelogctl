@@ -22,33 +22,43 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
+	"racelogctl/internal"
+	"racelogctl/wamp"
 
 	"github.com/spf13/cobra"
 )
 
-// registerCmd represents the register command
-var registerCmd = &cobra.Command{
-	Use:   "register",
-	Short: "Register an event",
-	Long: `This command performs the register procedure of an event. 
-The registration is usually performed by the racelogger.
-For debugging purpose this command may be used to initialize the backend in a similar manner.`,
+// listCmd represents the list command
+var providerListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("register called")
+		providerList()
 	},
 }
 
 func init() {
-	eventCmd.AddCommand(registerCmd)
+	providerCmd.AddCommand(providerListCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// registerCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// registerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func providerList() {
+	wamp.ListProvider(func(e *internal.Event, i int) bool {
+		return true
+	})
 }

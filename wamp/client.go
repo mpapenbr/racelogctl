@@ -3,6 +3,7 @@ package wamp
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"racelogctl/internal"
@@ -62,9 +63,16 @@ func GetEvent(id int) *internal.Event {
 	return &e
 }
 
-type Delta struct {
-	idx   int
-	value interface{}
+func DeleteEvent(id int) {
+	client := getAdminClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.admin.event.delete", nil, wamp.List{id}, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	fmt.Printf("result %v\n", result)
+
 }
 
 func GetStates(id int, event *internal.Event, start int, num int) []internal.State {
@@ -92,24 +100,78 @@ func GetStates(id int, event *internal.Event, start int, num int) []internal.Sta
 
 }
 
-func GetStatesWithCallback(id int, event *internal.Event, start int, num int) []internal.State {
+func RegisterProvider(registerMsg internal.RegisterMessage) {
+	client := getDataproviderClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.dataprovider.register_provider", nil, wamp.List{registerMsg}, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	logger.Printf("%v", result)
+
+}
+
+func UnregisterProvider(eventKey string) {
+	client := getDataproviderClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.dataprovider.remove_provider", nil, wamp.List{eventKey}, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	logger.Printf("%v", result)
+
+}
+
+func ListProvider(consumer EventConsumer) {
 	client := getClient()
 	defer client.Close()
 	ctx := context.Background()
-	result, err := client.Call(ctx, "racelog.public.archive.state.delta", nil, wamp.List{id, start, num}, nil, nil)
+	result, err := client.Call(ctx, "racelog.public.list_providers", nil, wamp.List{}, nil, nil)
 	if err != nil {
 		logger.Fatal(err)
-		return nil
 	}
 
-	ret, _ := wamp.AsList(result.Arguments[0])
-	// fmt.Printf("ret: %v\n", ret)
-	s := internal.State{}
-	jsonData, _ := json.Marshal(ret)
-	logger.Printf("jsonData: %v", string(jsonData))
-	json.Unmarshal(jsonData, &s)
-	// logger.Printf("%+v\n", s)
-	return nil
+	for i := range result.Arguments {
+		ret, _ := wamp.AsList(result.Arguments[i])
+		for j := range ret {
+
+			var e internal.Event
+			jsonData, _ := json.Marshal(ret[j])
+			// logger.Printf("jsonData: %v", string(jsonData))
+			json.Unmarshal(jsonData, &e)
+			if !consumer(&e, j) {
+				return
+			}
+
+		}
+	}
+
+}
+
+func getDataproviderClient() *client.Client {
+	logger := log.New(os.Stdout, "", 0)
+	cfg := client.Config{
+		Realm:        internal.Realm,
+		Logger:       logger,
+		HelloDetails: wamp.Dict{"authid": "dataprovider"}, // TODO
+		AuthHandlers: map[string]client.AuthFunc{
+			"ticket": func(*wamp.Challenge) (string, wamp.Dict) { return internal.DataproviderPassword, wamp.Dict{} }, //TODO:
+		}}
+	return getClientWithConfig(&cfg)
+}
+
+func getAdminClient() *client.Client {
+	logger := log.New(os.Stdout, "", 0)
+	cfg := client.Config{
+		Realm:        internal.Realm,
+		Logger:       logger,
+		HelloDetails: wamp.Dict{"authid": "admin"}, // TODO
+		AuthHandlers: map[string]client.AuthFunc{
+			"ticket": func(*wamp.Challenge) (string, wamp.Dict) { return internal.AdminPassword, wamp.Dict{} },
+		}}
+	return getClientWithConfig(&cfg)
 }
 
 func getClient() *client.Client {
@@ -117,6 +179,17 @@ func getClient() *client.Client {
 	cfg := client.Config{Realm: internal.Realm, Logger: logger}
 	// Connect wampClient session.
 	wampClient, err := client.ConnectNet(context.Background(), internal.Url, cfg)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	return wampClient
+}
+
+func getClientWithConfig(cfg *client.Config) *client.Client {
+
+	// Connect wampClient session.
+	wampClient, err := client.ConnectNet(context.Background(), internal.Url, *cfg)
 	if err != nil {
 		logger.Fatal(err)
 	}

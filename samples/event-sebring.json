@@ -1,0 +1,106 @@
+{
+  "EventKey": "87b7b0c64db48aa7e7955a3f26160675",
+  "Name": "SRC GT3 Sebring",
+  "RecordDate": "2022-03-11T20:06:02.817575",
+  "Data": {
+    "Info": {
+      "raceloggerVersion": "0.4.0",
+      "name": "SRC GT3 Sebring",
+      "eventTime": "2022-03-19T10:15:00",
+      "trackId": 95,
+      "trackDisplayName": "Sebring International Raceway",
+      "trackDisplayShortName": "Sebring",
+      "trackConfigName": "International",
+      "trackLength": 5790,
+      "sectors": [
+        {
+          "SectorNum": 0,
+          "SectorStartPct": 0
+        },
+        {
+          "SectorNum": 1,
+          "SectorStartPct": 0.130902
+        },
+        {
+          "SectorNum": 2,
+          "SectorStartPct": 0.3069
+        },
+        {
+          "SectorNum": 3,
+          "SectorStartPct": 0.44224
+        },
+        {
+          "SectorNum": 4,
+          "SectorStartPct": 0.53158
+        },
+        {
+          "SectorNum": 5,
+          "SectorStartPct": 0.658844
+        },
+        {
+          "SectorNum": 6,
+          "SectorStartPct": 0.876665
+        }
+      ]
+    },
+    "ReplayInfo": {
+      "MinTimestamp": 1647025564.4564607,
+      "MinSessionTime": 2,
+      "MaxSessionTime": 2
+    },
+    "Manifests": {
+      "Car": [
+        "state",
+        "carIdx",
+        "carNum",
+        "userName",
+        "teamName",
+        "car",
+        "carClass",
+        "pos",
+        "pic",
+        "lap",
+        "lc",
+        "gap",
+        "interval",
+        "trackPos",
+        "speed",
+        "dist",
+        "pitstops",
+        "stintLap",
+        "last",
+        "best",
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6",
+        "s7"
+      ],
+      "Session": [
+        "sessionNum",
+        "sessionTime",
+        "timeRemain",
+        "lapsRemain",
+        "flagState",
+        "timeOfDay",
+        "airTemp",
+        "airDensity",
+        "airPressure",
+        "trackTemp",
+        "windDir",
+        "windVel"
+      ],
+      "Message": [
+        "type",
+        "subType",
+        "carIdx",
+        "carNum",
+        "carClass",
+        "msg"
+      ]
+    }
+  },
+  "Id": 2
+}

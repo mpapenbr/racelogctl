@@ -24,6 +24,7 @@ var rootCmd = &cobra.Command{
 	Use:   "racelogctl",
 	Short: "command line interface to racelog backend service",
 	Long:  ``,
+
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) {},
@@ -39,6 +40,7 @@ func Execute() {
 }
 
 func init() {
+	println("root.init")
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
@@ -80,12 +82,15 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 		bindFlags(rootCmd, viper.GetViper())
+		// bindFlags(deleteCmd, viper.GetViper())
+
 	}
 
 }
 
 // Bind each cobra flag to its associated viper configuration (config file and environment variable)
 func bindFlags(cmd *cobra.Command, v *viper.Viper) {
+
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
 		// Environment variables can't have dashes in them, so bind them to their equivalent
 		// keys with underscores, e.g. --favorite-color to STING_FAVORITE_COLOR
@@ -97,6 +102,7 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 		// Apply the viper config value to the flag when the flag is not set and viper has a value
 		if !f.Changed && v.IsSet(f.Name) {
 			val := v.Get(f.Name)
+			fmt.Printf("Apply %v to %s\n", val, f.Name)
 			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
 		}
 	})
