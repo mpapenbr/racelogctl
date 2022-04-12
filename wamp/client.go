@@ -75,7 +75,7 @@ func DeleteEvent(id int) {
 
 }
 
-func GetStates(id int, event *internal.Event, start int, num int) []internal.State {
+func GetStates(id int, event *internal.Event, start float64, num int) []internal.State {
 	client := getClient()
 	defer client.Close()
 	ctx := context.Background()
@@ -148,6 +148,31 @@ func ListProvider(consumer EventConsumer) {
 		}
 	}
 
+}
+
+func WithDataProviderClient(eventKey string, rcv chan internal.State) {
+
+	// myCount := 0
+	go func() {
+		client := getDataproviderClient()
+		defer client.Close()
+		// ctx := context.Background()
+
+		for {
+			s, more := <-rcv
+			err := client.Publish(fmt.Sprintf("racelog.public.live.state.%s", eventKey), nil, wamp.List{s}, nil)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("chanValue: %v more: %v\n", s.Timestamp, more)
+			// time.Sleep(100 * time.Millisecond)
+			if !more {
+				fmt.Println("closed channel signaled")
+				return
+			}
+		}
+	}()
+	fmt.Println("fertig")
 }
 
 func getDataproviderClient() *client.Client {

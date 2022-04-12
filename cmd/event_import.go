@@ -22,49 +22,67 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
+	"bufio"
+	"encoding/json"
+	"log"
+	"os"
 	"racelogctl/internal"
 	"racelogctl/wamp"
 
 	"github.com/spf13/cobra"
 )
 
-// unregisterCmd represents the unregister command
-var unregisterCmd = &cobra.Command{
-	Use:   "unregister <eventKey>",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+// importCmd represents the import command
+var importCmd = &cobra.Command{
+	Use:   "import <eventId> <input>",
+	Short: "Reads data from a file and sends it the racelogger backend.",
+	Long:  `TODO: requirements when to use....`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) > 0 {
-
-			unregisterEventProvider(args[0])
-
-		} else {
-			fmt.Println("requires an event key")
-		}
+		importData()
 	},
 }
 
 func init() {
-	providerCmd.AddCommand(unregisterCmd)
+	eventCmd.AddCommand(importCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// unregisterCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// importCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// unregisterCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	unregisterCmd.Flags().StringVarP(&internal.DataproviderPassword, "dataprovider-password", "p", "", "sets the Dataprovider password for this action")
+	importCmd.Flags().StringVarP(&internal.Input, "input", "i", "", "Input file containing to states to be imported")
+	importCmd.MarkFlagRequired("input")
+	importCmd.Flags().StringVarP(&internal.EventKey, "eventKey", "k", "", "Key of the event recieving the data")
+	importCmd.MarkFlagRequired("eventKey")
+	importCmd.Flags().StringVarP(&internal.DataproviderPassword, "dataprovider-password", "p", "", "sets the Dataprovider password for this action")
 }
 
-func unregisterEventProvider(eventKey string) {
-	wamp.UnregisterProvider(eventKey)
+func importData() {
+	file, err := os.Open(internal.Input)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	// optionally, resize scanner's capacity for lines over 64K, see next example
+	sender := make(chan internal.State)
+	wamp.WithDataProviderClient(internal.EventKey, sender)
+	idx := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+		s := internal.State{}
+		json.Unmarshal([]byte(line), &s)
+		idx++
+		sender <- s
+		// fmt.Printf("%v\n", s.Payload.Session)
+	}
+	close(sender)
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 }

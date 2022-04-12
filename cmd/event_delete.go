@@ -50,7 +50,7 @@ var deleteCmd = &cobra.Command{
 }
 
 func init() {
-	println("deleteCmd.init")
+	// println("deleteCmd.init")
 	eventCmd.AddCommand(deleteCmd)
 
 	// Here you will define your flags and configuration settings.

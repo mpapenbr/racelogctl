@@ -39,6 +39,7 @@ var registerCmd = &cobra.Command{
 	Long: `This command performs the register procedure of an event. 
 The registration is usually performed by the racelogger.
 For debugging purpose this command may be used to initialize the backend in a similar manner.`,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		register()
 	},
@@ -52,10 +53,11 @@ func init() {
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// registerCmd.PersistentFlags().String("foo", "", "A help for foo")
-	registerCmd.PersistentFlags().StringVar(&internal.SampleFile, "sample", "", "Sample event file")
-	registerCmd.PersistentFlags().StringVar(&internal.EventName, "name", "", "Event name for registration (default: Sample-YYYY-MM-DD-HH-MM)")
-	registerCmd.PersistentFlags().StringVar(&internal.EventKey, "key", "", "Event key for registration")
-	registerCmd.PersistentFlags().StringVar(&internal.EventDescription, "description", "", "Event description")
+	registerCmd.Flags().StringVarP(&internal.SampleFile, "sample", "s", "", "Sample event file")
+	registerCmd.Flags().StringVarP(&internal.EventName, "name", "n", "", "Event name for registration (default: Sample-YYYY-MM-DD-HH-MM)")
+	registerCmd.Flags().StringVarP(&internal.EventKey, "key", "k", "", "Event key for registration")
+	registerCmd.Flags().StringVarP(&internal.EventDescription, "description", "d", "", "Event description")
+	registerCmd.Flags().StringVarP(&internal.DataproviderPassword, "dataprovider-password", "p", "", "sets the Dataprovider password for this action")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

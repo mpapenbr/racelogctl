@@ -40,7 +40,7 @@ func Execute() {
 }
 
 func init() {
-	println("root.init")
+	// println("root.init")
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
@@ -102,7 +102,7 @@ func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 		// Apply the viper config value to the flag when the flag is not set and viper has a value
 		if !f.Changed && v.IsSet(f.Name) {
 			val := v.Get(f.Name)
-			fmt.Printf("Apply %v to %s\n", val, f.Name)
+			// fmt.Printf("Apply %v to %s\n", val, f.Name)
 			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
 		}
 	})

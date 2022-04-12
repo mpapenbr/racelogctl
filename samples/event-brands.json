@@ -1,0 +1,101 @@
+{
+  "EventKey": "18866279997b6fd75a67369548c8f1b8",
+  "Name": "Brands Hatch Circuit 2022-03-21-1112",
+  "RecordDate": "2022-03-21T11:12:38.552475",
+  "Data": {
+    "Info": {
+      "raceloggerVersion": "0.4.0",
+      "name": "Brands Hatch Circuit 2022-03-21-1112",
+      "eventTime": "2022-05-15T13:25:00",
+      "trackId": 145,
+      "trackDisplayName": "Brands Hatch Circuit",
+      "trackDisplayShortName": "Brands Hatch",
+      "trackConfigName": "Grand Prix",
+      "trackLength": 3890,
+      "sectors": [
+        {
+          "SectorNum": 0,
+          "SectorStartPct": 0
+        },
+        {
+          "SectorNum": 1,
+          "SectorStartPct": 0.120787
+        },
+        {
+          "SectorNum": 2,
+          "SectorStartPct": 0.278897
+        },
+        {
+          "SectorNum": 3,
+          "SectorStartPct": 0.473626
+        },
+        {
+          "SectorNum": 4,
+          "SectorStartPct": 0.674871
+        },
+        {
+          "SectorNum": 5,
+          "SectorStartPct": 0.845488
+        }
+      ]
+    },
+    "ReplayInfo": {
+      "MinTimestamp": 1647857558.5796394,
+      "MinSessionTime": 205.2000005086842,
+      "MaxSessionTime": 593.5833338417511
+    },
+    "Manifests": {
+      "Car": [
+        "state",
+        "carIdx",
+        "carNum",
+        "userName",
+        "teamName",
+        "car",
+        "carClass",
+        "pos",
+        "pic",
+        "lap",
+        "lc",
+        "gap",
+        "interval",
+        "trackPos",
+        "speed",
+        "dist",
+        "pitstops",
+        "stintLap",
+        "last",
+        "best",
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6"
+      ],
+      "Session": [
+        "sessionNum",
+        "sessionTime",
+        "timeRemain",
+        "lapsRemain",
+        "flagState",
+        "timeOfDay",
+        "airTemp",
+        "airDensity",
+        "airPressure",
+        "trackTemp",
+        "windDir",
+        "windVel"
+      ],
+      "Message": [
+        "type",
+        "subType",
+        "carIdx",
+        "carNum",
+        "carClass",
+        "msg"
+      ]
+    }
+  },
+  "Id": 23
+}

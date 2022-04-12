@@ -61,14 +61,14 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	eventCmd.PersistentFlags().StringVar(&internal.OutputFormat, "format", "text", "Output format: text|json. (Default: text)")
-	eventCmd.PersistentFlags().BoolVar(&internal.JsonPretty, "pretty", false, "use pretty json format. (Default: false)")
 
 	// infoCmd.PersistentFlags().IntVar(&internal.EventId, "id", -1, "the event id to fetch")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// infoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	infoCmd.Flags().StringVarP(&internal.OutputFormat, "format", "f", "text", "Output format: text|json. (Default: text)")
+	infoCmd.Flags().BoolVar(&internal.JsonPretty, "pretty", false, "use pretty json format. (Default: false)")
 }
 
 func eventInfo(id int) {
@@ -98,7 +98,8 @@ Recorded: %s (racelogger: %s)
 Track: %v
 Session begin: %s %.0f
 Session end: %s %.0f
-Race begin (UTC): %s (%d)`,
+Race begin (UTC): %s (%d)
+`,
 		e.Id, e.EventKey,
 		e.Name,
 		recDate.Format("2006-01-02 15:04"), e.Data.Info.RaceloggerVersion,

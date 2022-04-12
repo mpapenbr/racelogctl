@@ -89,7 +89,7 @@ func fetchStates(eventId int, outFile *os.File) {
 		return
 	}
 	fmt.Printf("Fetching %d states beginning at %d\n", internal.Num, internal.From)
-	states := wamp.GetStates(eventId, event, internal.From, internal.Num)
+	states := wamp.GetStates(eventId, event, float64(internal.From), internal.Num)
 	fmt.Printf("\n---\nresulting states\n")
 	for _, entry := range states {
 		jsonData, _ := json.Marshal(entry)
@@ -100,19 +100,19 @@ func fetchStates(eventId int, outFile *os.File) {
 
 func fetchFullData(event *internal.Event, outFile *os.File) {
 	// var lastTimestamp float64 = 0
-	from := int(event.Data.ReplayInfo.MinTimestamp)
+	from := event.Data.ReplayInfo.MinTimestamp
 	if internal.From != 0 {
-		from = internal.From
+		from = float64(internal.From)
 	}
 	for goon := true; goon; {
-		fmt.Printf("Fetching %d states beginning at %d\n", internal.Num, from)
+		fmt.Printf("Fetching %d states beginning at %v\n", internal.Num, from)
 		states := wamp.GetStates(int(event.Id), event, from, internal.Num)
 		goon = len(states) == internal.Num
 		for _, entry := range states {
 			jsonData, _ := json.Marshal(entry)
 			outFile.WriteString(fmt.Sprintln(string(jsonData)))
 		}
-		from = int(states[len(states)-1].Timestamp)
+		from = states[len(states)-1].Timestamp + 0.0001
 	}
 
 }
