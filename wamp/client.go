@@ -11,6 +11,7 @@ import (
 
 	"github.com/gammazero/nexus/v3/client"
 	"github.com/gammazero/nexus/v3/wamp"
+	"github.com/mitchellh/mapstructure"
 )
 
 // consumer function get an Event and the current index within a list.
@@ -75,6 +76,25 @@ func DeleteEvent(id int) {
 
 }
 
+func ProcessEvent(id int) internal.ResultMessage {
+	client := getAdminClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.admin.event.process", nil, nil, wamp.Dict{"eventId": id}, nil)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	if len(result.Arguments) > 0 {
+		var resultMsg internal.ResultMessage
+		// fmt.Printf("%+v", result.Arguments[0])
+		mapstructure.Decode(result.Arguments[0], &resultMsg)
+		// fmt.Printf("%+v", resultMsg)
+		return resultMsg
+	}
+	return internal.ResultMessage{}
+
+}
+
 func GetStates(id int, event *internal.Event, start float64, num int) []internal.State {
 	client := getClient()
 	defer client.Close()
@@ -89,7 +109,7 @@ func GetStates(id int, event *internal.Event, start float64, num int) []internal
 	lastState := internal.State{}
 	resultStates := make([]internal.State, 0)
 	for j := range ret {
-		s := internal.State{}
+		s := internal.State{Payload: internal.Payload{}}
 		jsonData, _ := json.Marshal(ret[j])
 		// logger.Printf("jsonData: %v", string(jsonData))
 		json.Unmarshal(jsonData, &s)

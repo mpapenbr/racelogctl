@@ -76,8 +76,10 @@ func ProcessDeltaStates(state, incoming internal.State) internal.State {
 		s.Payload.Session = PatchSession(state.Payload.Session, incoming.Payload.Session)
 		if len(incoming.Payload.Messages) > 0 {
 			fmt.Printf("have %d messages \n", len(incoming.Payload.Messages))
+			s.Payload.Messages = incoming.Payload.Messages // messages don't have delta processing by design
+		} else {
+			s.Payload.Messages = [][]interface{}{}
 		}
-		s.Payload.Messages = incoming.Payload.Messages // messages don't have delta processing by design
 	}
 	return s
 }
