@@ -58,6 +58,11 @@ func TestPatchSession(t *testing.T) {
 			args: args{src: []interface{}{1, 2, 3}, patchData: []interface{}{[]interface{}{0, 10}, []interface{}{1, 20}}},
 			want: []interface{}{10, 20, 3},
 		},
+		{
+			name: "new data for empty list",
+			args: args{src: []interface{}{}, patchData: []interface{}{[]interface{}{0, 10}, []interface{}{2, 20}}},
+			want: []interface{}{10, nil, 20},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -82,6 +87,14 @@ func TestProcessDeltaStates(t *testing.T) {
 			Messages: [][]interface{}{{"M1", "M2"}},
 		},
 	}
+	type1Empty := internal.State{
+		Type: 1,
+		Payload: internal.Payload{
+			Cars:     [][]interface{}{},
+			Session:  []interface{}{},
+			Messages: [][]interface{}{{"M1", "M2"}},
+		},
+	}
 	type8 := internal.State{
 		Type: 8,
 		Payload: internal.Payload{
@@ -94,6 +107,14 @@ func TestProcessDeltaStates(t *testing.T) {
 		Type: 1,
 		Payload: internal.Payload{
 			Cars:     [][]interface{}{{"OUT", 20, 1.2}, {"RUN", 16, 99.99}},
+			Session:  []interface{}{"C", "D"},
+			Messages: [][]interface{}{{"M3"}},
+		},
+	}
+	result2 := internal.State{
+		Type: 1,
+		Payload: internal.Payload{
+			Cars:     [][]interface{}{{"OUT", 20, nil}, {nil, nil, 99.99}},
 			Session:  []interface{}{"C", "D"},
 			Messages: [][]interface{}{{"M3"}},
 		},
@@ -123,6 +144,11 @@ func TestProcessDeltaStates(t *testing.T) {
 			name: "incoming type 8",
 			args: args{type1, type8},
 			want: result,
+		},
+		{
+			name: "incoming type 8 on empty type 1",
+			args: args{type1Empty, type8},
+			want: result2,
 		},
 	}
 	for _, tt := range tests {

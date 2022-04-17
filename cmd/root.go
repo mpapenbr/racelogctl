@@ -51,10 +51,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&internal.Realm, "realm", "racelog", "racelog realm to use (default is racelog)")
 	rootCmd.PersistentFlags().StringVar(&internal.Url, "url", "wss://crossbar.iracing-tools.de/ws", "the websocket URL of the racelog WAMP server")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }
 
 // initConfig reads in config file and ENV variables if set.

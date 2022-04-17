@@ -23,9 +23,28 @@ func GetIntValue(src interface{}) int {
 	}
 }
 
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func PatchSession(src []interface{}, patchData []interface{}) []interface{} {
 
+	maxCol := 0
+	for _, delta := range patchData {
+		workDelta := delta.([]interface{})
+		maxCol = max(maxCol, (GetIntValue(workDelta[0])))
+	}
+
 	workCopy := DuplicateArray(src)
+	if len(workCopy) < maxCol {
+		tmp := make([]interface{}, maxCol+1)
+		copy(tmp, src)
+		workCopy = tmp
+	}
+
 	for _, delta := range patchData {
 		workDelta := delta.([]interface{})
 		col := GetIntValue(workDelta[0])
@@ -41,13 +60,36 @@ func PatchSession(src []interface{}, patchData []interface{}) []interface{} {
 func PatchCars(src [][]interface{}, patchData [][]interface{}) [][]interface{} {
 	// fmt.Printf("patch2dData: %v", patchData)
 	// we do a "deep copy" manually here. the 2nd dimesion needs own instances, too
-	workCopy := make([][]interface{}, len(src))
-	copy(workCopy, src)
 
-	for i := 0; i < len(src); i++ {
+	maxCol := 0
+	maxRow := 0
+	for _, delta := range patchData {
+		maxRow = max(maxRow, (GetIntValue(delta[0])))
+		maxCol = max(maxCol, (GetIntValue(delta[1])))
+	}
+
+	var workCopy [][]interface{}
+	if len(src) < maxRow {
+		workCopy = make([][]interface{}, maxRow+1)
+		copy(workCopy, src)
+	} else {
+		workCopy = make([][]interface{}, len(src))
+		copy(workCopy, src)
+	}
+
+	for i := 0; i < len(workCopy); i++ {
 		// workCopy[i] = make([]interface{}, len(src[i]))
 		// copy(workCopy[i], src[i])
-		workCopy[i] = DuplicateArray(src[i])
+
+		if len(workCopy[i]) < maxCol {
+			tmp := make([]interface{}, maxCol+1)
+			if i < len(src) {
+				copy(tmp, src[i])
+			}
+			workCopy[i] = tmp
+		} else {
+			workCopy[i] = DuplicateArray(src[i])
+		}
 	}
 	for _, delta := range patchData {
 
