@@ -21,9 +21,10 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "racelogctl",
-	Short: "command line interface to racelog backend service",
-	Long:  ``,
+	Use:     "racelogctl",
+	Version: Version,
+	Short:   "command line interface to racelog backend service",
+	Long:    ``,
 
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
@@ -46,7 +47,7 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-
+	// rootCmd.SetVersionTemplate(fmt.Sprintf("Version %s", Version))
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.racelogctl.yaml)")
 	rootCmd.PersistentFlags().StringVar(&internal.Realm, "realm", "racelog", "racelog realm to use (default is racelog)")
 	rootCmd.PersistentFlags().StringVar(&internal.Url, "url", "wss://crossbar.iracing-tools.de/ws", "the websocket URL of the racelog WAMP server")
