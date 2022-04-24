@@ -16,4 +16,4 @@ goreleaser --snapshot --skip-publish --rm-dist && \
 sed -i -E "s/(Version\W+=\W*)\"(.*?)\"/\1\"$NO_PREFIX_TAG\"/" cmd/version.go && \
 git add cmd/version.go && git commit -m "chore: Release $FULL_TAG" && \
 git tag -a $FULL_TAG -m "Release $FULL_TAG" && \
-echo git push origin main --tags
+git push origin main --tags
