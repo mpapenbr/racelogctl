@@ -1,9 +1,9 @@
 {
-  "EventKey": "18866279997b6fd75a67369548c8f1b8",
-  "Name": "Brands Hatch Circuit 2022-03-21-1112",
-  "RecordDate": "2022-03-21T11:12:38.552475",
-  "Data": {
-    "Info": {
+  "eventKey": "18866279997b6fd75a67369548c8f1b8",
+  "name": "Brands Hatch Circuit 2022-03-21-1112",
+  "recordData": "",
+  "data": {
+    "info": {
       "raceloggerVersion": "0.4.0",
       "name": "Brands Hatch Circuit 2022-03-21-1112",
       "eventTime": "2022-05-15T13:25:00",
@@ -37,15 +37,24 @@
           "SectorNum": 5,
           "SectorStartPct": 0.845488
         }
+      ],
+      "sessions": [
+        {
+          "num": 0,
+          "laps": 3,
+          "name": "RACE",
+          "time": 86400,
+          "type": "Race"
+        }
       ]
     },
-    "ReplayInfo": {
-      "MinTimestamp": 1647857558.5796394,
-      "MinSessionTime": 205.2000005086842,
-      "MaxSessionTime": 593.5833338417511
+    "replayInfo": {
+      "minTimestamp": 1647857558.5796394,
+      "minSessionTime": 205.2000005086842,
+      "maxSessionTime": 593.5833338417511
     },
-    "Manifests": {
-      "Car": [
+    "manifests": {
+      "car": [
         "state",
         "carIdx",
         "carNum",
@@ -73,7 +82,7 @@
         "s5",
         "s6"
       ],
-      "Session": [
+      "session": [
         "sessionNum",
         "sessionTime",
         "timeRemain",
@@ -87,15 +96,16 @@
         "windDir",
         "windVel"
       ],
-      "Message": [
+      "message": [
         "type",
         "subType",
         "carIdx",
         "carNum",
         "carClass",
         "msg"
-      ]
+      ],
+      "pit": []
     }
   },
-  "Id": 23
+  "id": 23
 }
