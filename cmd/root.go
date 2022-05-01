@@ -49,14 +49,14 @@ func init() {
 	// will be global for your application.
 	// rootCmd.SetVersionTemplate(fmt.Sprintf("Version %s", Version))
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.racelogctl.yaml)")
-	rootCmd.PersistentFlags().StringVar(&internal.Realm, "realm", "racelog", "racelog realm to use (default is racelog)")
+	rootCmd.PersistentFlags().StringVar(&internal.Realm, "realm", "racelog", "racelog realm to use")
 	rootCmd.PersistentFlags().StringVar(&internal.Url, "url", "wss://crossbar.iracing-tools.de/ws", "the websocket URL of the racelog WAMP server")
 
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
+	// println("initConfig")
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -79,6 +79,7 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 		bindFlags(rootCmd, viper.GetViper())
+
 		// bindFlags(deleteCmd, viper.GetViper())
 
 	}
@@ -89,6 +90,7 @@ func initConfig() {
 func bindFlags(cmd *cobra.Command, v *viper.Viper) {
 
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		// fmt.Printf("%+v\n", f)
 		// Environment variables can't have dashes in them, so bind them to their equivalent
 		// keys with underscores, e.g. --favorite-color to STING_FAVORITE_COLOR
 		if strings.Contains(f.Name, "-") {

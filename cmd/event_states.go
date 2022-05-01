@@ -71,10 +71,10 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	stateCmd.PersistentFlags().IntVar(&internal.From, "from", 0, "Fetch states beginning from timestamp (Default: 0=first available entry)")
-	stateCmd.PersistentFlags().IntVar(&internal.Num, "num", 10, "How many states should be fetches in one request")
-	stateCmd.PersistentFlags().BoolVar(&internal.FullStateData, "full", false, "retrieves all data for this event")
-	stateCmd.PersistentFlags().StringVar(&internal.Output, "output", "-", "Output filename. (Default: stdout)")
+	stateCmd.Flags().IntVar(&internal.From, "from", 0, "Fetch states beginning from timestamp (Default: 0=first available entry)")
+	stateCmd.Flags().IntVar(&internal.Num, "num", 10, "How many states should be fetches in one request")
+	stateCmd.Flags().BoolVar(&internal.FullStateData, "full", false, "retrieves all data for this event")
+	stateCmd.Flags().StringVar(&internal.Output, "output", "-", "Output filename. (Default: stdout)")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

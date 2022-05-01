@@ -61,7 +61,7 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	deleteCmd.PersistentFlags().StringVarP(&internal.AdminPassword, "admin-password", "p", "", "sets the admin password for this action")
+	deleteCmd.Flags().StringVarP(&internal.AdminPassword, "admin-password", "p", "", "sets the admin password for this action")
 	// deleteCmd.Flags().IntVarP(&eventId, "eventId", "e", -1, "sets the admin password for this action")
 
 	//
