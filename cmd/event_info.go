@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // infoCmd represents the info command
@@ -37,7 +38,12 @@ var infoCmd = &cobra.Command{
 	Use:   "info <eventId>",
 	Short: "Get information about an event",
 	Long:  ``,
-
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
+		// println("in event_info preRunE")
+		bindFlags(cmd, viper.GetViper())
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 			eventId, err := strconv.Atoi(args[0])
@@ -67,8 +73,8 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// infoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	infoCmd.Flags().StringVarP(&internal.OutputFormat, "format", "f", "text", "Output format: text|json. (Default: text)")
-	infoCmd.Flags().BoolVar(&internal.JsonPretty, "pretty", false, "use pretty json format. (Default: false)")
+	infoCmd.Flags().StringVarP(&internal.OutputFormat, "format", "f", "text", "Output format: text|json.")
+	infoCmd.Flags().BoolVarP(&internal.JsonPretty, "pretty", "p", false, "use pretty json format. (Default: false)")
 }
 
 func eventInfo(id int) {
