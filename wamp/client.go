@@ -20,8 +20,33 @@ type EventConsumer func(*internal.Event, int) bool
 
 var logger = log.New(os.Stdout, "client", 0)
 
+func GetEventList() []internal.Event {
+	client := GetClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.public.get_events", nil, nil, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	retEvents := make([]internal.Event, 0)
+	for i := range result.Arguments {
+		ret, _ := wamp.AsList(result.Arguments[i])
+		for j := range ret {
+
+			var e internal.Event
+			jsonData, _ := json.Marshal(ret[j])
+			// logger.Printf("jsonData: %v", string(jsonData))
+			json.Unmarshal(jsonData, &e)
+			retEvents = append(retEvents, e)
+
+		}
+	}
+	return retEvents
+}
+
 func GetEvents(consumer EventConsumer) {
-	client := getClient()
+	client := GetClient()
 	defer client.Close()
 	ctx := context.Background()
 	result, err := client.Call(ctx, "racelog.public.get_events", nil, nil, nil, nil)
@@ -45,7 +70,7 @@ func GetEvents(consumer EventConsumer) {
 }
 
 func GetEvent(id int) *internal.Event {
-	client := getClient()
+	client := GetClient()
 	defer client.Close()
 	ctx := context.Background()
 	result, err := client.Call(ctx, "racelog.public.get_event_info", nil, wamp.List{id}, nil, nil)
@@ -96,8 +121,32 @@ func ProcessEvent(id int) internal.ResultMessage {
 }
 
 func GetStates(id int, event *internal.Event, start float64, num int) []internal.State {
-	client := getClient()
+	client := GetClient()
 	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.public.archive.state.delta", nil, wamp.List{id, start, num}, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+		return nil
+	}
+
+	ret, _ := wamp.AsList(result.Arguments[0])
+	lastState := internal.State{}
+	resultStates := make([]internal.State, 0)
+	for j := range ret {
+		s := internal.State{Payload: internal.Payload{}}
+		jsonData, _ := json.Marshal(ret[j])
+		// logger.Printf("jsonData: %v", string(jsonData))
+		json.Unmarshal(jsonData, &s)
+		lastState = util.ProcessDeltaStates(lastState, s)
+		resultStates = append(resultStates, lastState)
+	}
+	return resultStates
+
+}
+
+func GetStatesWithClient(client *client.Client, id int, event *internal.Event, start float64, num int) []internal.State {
+
 	ctx := context.Background()
 	result, err := client.Call(ctx, "racelog.public.archive.state.delta", nil, wamp.List{id, start, num}, nil, nil)
 	if err != nil {
@@ -145,7 +194,7 @@ func UnregisterProvider(eventKey string) {
 }
 
 func ListProvider(consumer EventConsumer) {
-	client := getClient()
+	client := GetClient()
 	defer client.Close()
 	ctx := context.Background()
 	result, err := client.Call(ctx, "racelog.public.list_providers", nil, wamp.List{}, nil, nil)
@@ -219,7 +268,7 @@ func getAdminClient() *client.Client {
 	return getClientWithConfig(&cfg)
 }
 
-func getClient() *client.Client {
+func GetClient() *client.Client {
 	logger := log.New(os.Stdout, "", 0)
 	cfg := client.Config{Realm: internal.Realm, Logger: logger}
 	// Connect wampClient session.

@@ -19,5 +19,6 @@ var (
 	EventDescription     string // event description for registration
 	AdminPassword        string // the password used to perform admin commands
 	DataproviderPassword string // the password used to perform dataprovider commands
+	Worker               int    // the number of workers to use for stress tests
 
 )

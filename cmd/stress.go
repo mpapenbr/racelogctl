@@ -22,31 +22,28 @@ THE SOFTWARE.
 package cmd
 
 import (
-	"fmt"
+	"racelogctl/internal"
 
 	"github.com/spf13/cobra"
 )
 
-// replayCmd represents the replay command
-var replayCmd = &cobra.Command{
-	Use:   "replay",
-	Short: "Send prior recorded racelogger data to the server again.",
-	Long:  `This command is useful for debugging only.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("replay called - not yet implemented")
-	},
+// stressCmd represents the stress command
+var stressCmd = &cobra.Command{
+	Use:   "stress",
+	Short: "This command is used for stress testing the application",
+	Long:  "",
 }
 
 func init() {
-	eventCmd.AddCommand(replayCmd)
+	rootCmd.AddCommand(stressCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// replayCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// stressCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// replayCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	stressCmd.PersistentFlags().IntVarP(&internal.Worker, "worker", "w", 1, "Number of workers to use")
 }

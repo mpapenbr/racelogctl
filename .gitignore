@@ -17,7 +17,7 @@ racelogctl
 
 # Testdata
 leipert*
-
+stress-browser*.json
 # goreleaser
 dist/
 

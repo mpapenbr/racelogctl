@@ -1,6 +1,7 @@
 realm: racelog
-url: ws://host.docker.internal:8091/ws
-# url: wss://crossbar.iracing-tools.de/ws
+# url: ws://host.docker.internal:8091/ws
+url: ws://crossbar.homelab.local/ws
+#url: wss://crossbar.iracing-tools.de/ws
 # url: wss://crossbar.leipert-esports.de/ws
 
 pretty: true
