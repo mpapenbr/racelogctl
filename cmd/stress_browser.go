@@ -37,9 +37,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var speed = 1      // use this replay speed
-var numRuns = 1    // how many repetitions
-var numStates = 30 // how many states should be fetched in go
+var speed = 1         // use this replay speed
+var numRuns = 1       // how many repetitions
+var numStates = 30    // how many states should be fetched in go
+var raceLimitMin = -1 // if > 0, pick only races shorter than this amount
 
 // browserCmd represents the browser command
 var browserCmd = &cobra.Command{
@@ -98,6 +99,7 @@ func init() {
 	browserCmd.Flags().IntVar(&speed, "speed", 1, "Replay speed (<=0 means: go as fast as possible)")
 	browserCmd.Flags().IntVar(&numStates, "num-states", numStates, "How many states should be fetched in one request")
 	browserCmd.Flags().IntVar(&numRuns, "num-runs", numRuns, "Number of test runs")
+	browserCmd.Flags().IntVar(&raceLimitMin, "race-limit", raceLimitMin, "max race length (in minutes) to consider")
 }
 
 func simulateBrowser() {
@@ -266,7 +268,11 @@ func createJobs(ch chan<- *jobData, events []internal.Event, numRuns int) {
 		for {
 			pick := rand.Intn(len(events))
 			event := events[pick]
-			if (event.Data.ReplayInfo.MaxSessionTime - event.Data.ReplayInfo.MinSessionTime) < 6000 {
+			if raceLimitMin > 0 {
+				if (event.Data.ReplayInfo.MaxSessionTime - event.Data.ReplayInfo.MinSessionTime) < float64(raceLimitMin) {
+					return pick
+				}
+			} else {
 				return pick
 			}
 		}
