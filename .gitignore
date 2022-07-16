@@ -21,4 +21,4 @@ stress-browser*.json
 # goreleaser
 dist/
 
-.gitconfig.local
+.gitconfig.local*

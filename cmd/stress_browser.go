@@ -99,7 +99,7 @@ func init() {
 	browserCmd.Flags().IntVar(&speed, "speed", 1, "Replay speed (<=0 means: go as fast as possible)")
 	browserCmd.Flags().IntVar(&numStates, "num-states", numStates, "How many states should be fetched in one request")
 	browserCmd.Flags().IntVar(&numRuns, "num-runs", numRuns, "Number of test runs")
-	browserCmd.Flags().IntVar(&raceLimitMin, "race-limit", raceLimitMin, "max race length (in minutes) to consider")
+	browserCmd.Flags().IntVar(&raceLimitMin, "race-limit", raceLimitMin, "max race length (in minutes) to consider (-1 == no limit)")
 }
 
 func simulateBrowser() {
@@ -269,7 +269,7 @@ func createJobs(ch chan<- *jobData, events []internal.Event, numRuns int) {
 			pick := rand.Intn(len(events))
 			event := events[pick]
 			if raceLimitMin > 0 {
-				if (event.Data.ReplayInfo.MaxSessionTime - event.Data.ReplayInfo.MinSessionTime) < float64(raceLimitMin) {
+				if (event.Data.ReplayInfo.MaxSessionTime - event.Data.ReplayInfo.MinSessionTime) < float64(raceLimitMin*60) {
 					return pick
 				}
 			} else {

@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"racelogctl/internal"
+	"racelogctl/wamp"
 
 	"github.com/spf13/cobra"
 )
@@ -46,4 +47,27 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	stressCmd.PersistentFlags().IntVarP(&internal.Worker, "worker", "w", 1, "Number of workers to use")
+}
+
+// helper functions here
+
+func raceLoggerVersion(e *internal.Event) bool {
+	return len(e.Data.Info.RaceloggerVersion) > 0
+}
+func isMinSessionLength(e *internal.Event, minSessionLengthMinutes int) bool {
+	return (e.Data.ReplayInfo.MaxSessionTime - e.Data.ReplayInfo.MinSessionTime) > float64(minSessionLengthMinutes*60)
+}
+
+func computeAvailableEvents(minSessionLengthMinutes int) []internal.Event {
+	availableEvents := []internal.Event{}
+	allEvents := wamp.GetEventList()
+	for _, event := range allEvents {
+		validSource := raceLoggerVersion(&event) && isMinSessionLength(&event, minSessionLengthMinutes)
+		if validSource {
+			availableEvents = append(availableEvents, event)
+			printEventOverview(&event)
+		}
+	}
+	return availableEvents
+	// fmt.Printf("%v\n", availableEvents)
 }

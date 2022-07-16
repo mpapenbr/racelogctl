@@ -173,11 +173,11 @@ func RegisterProvider(registerMsg internal.RegisterMessage) {
 	client := getDataproviderClient()
 	defer client.Close()
 	ctx := context.Background()
-	result, err := client.Call(ctx, "racelog.dataprovider.register_provider", nil, wamp.List{registerMsg}, nil, nil)
+	_, err := client.Call(ctx, "racelog.dataprovider.register_provider", nil, wamp.List{registerMsg}, nil, nil)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	logger.Printf("%v", result)
+	// logger.Printf("%v", result)
 
 }
 
@@ -185,15 +185,15 @@ func UnregisterProvider(eventKey string) {
 	client := getDataproviderClient()
 	defer client.Close()
 	ctx := context.Background()
-	result, err := client.Call(ctx, "racelog.dataprovider.remove_provider", nil, wamp.List{eventKey}, nil, nil)
+	_, err := client.Call(ctx, "racelog.dataprovider.remove_provider", nil, wamp.List{eventKey}, nil, nil)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	logger.Printf("%v", result)
+	// logger.Printf("%v", result)
 
 }
 
-func ListProvider(consumer EventConsumer) {
+func ConsumeProviders(consumer EventConsumer) {
 	client := GetClient()
 	defer client.Close()
 	ctx := context.Background()
@@ -219,6 +219,54 @@ func ListProvider(consumer EventConsumer) {
 
 }
 
+func ListProviders() []internal.Event {
+	client := GetClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.public.list_providers", nil, wamp.List{}, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	retEvents := make([]internal.Event, 0)
+	for i := range result.Arguments {
+		ret, _ := wamp.AsList(result.Arguments[i])
+		for j := range ret {
+
+			var e internal.Event
+			jsonData, _ := json.Marshal(ret[j])
+			// logger.Printf("jsonData: %v", string(jsonData))
+			json.Unmarshal(jsonData, &e)
+			retEvents = append(retEvents, e)
+
+		}
+	}
+	return retEvents
+
+}
+
+func GetLiveAnalysisData(eventKey string) map[string]interface{} {
+	client := GetClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.public.live.get_event_analysis", nil, wamp.List{eventKey}, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+		return nil
+	}
+
+	ret, _ := wamp.AsDict(result.Arguments[0])
+	if len(ret) == 0 {
+		return nil
+	}
+
+	jsonData, _ := json.Marshal(ret)
+	var retStruct map[string]interface{}
+	json.Unmarshal(jsonData, &retStruct)
+	return retStruct
+
+}
+
 func WithDataProviderClient(eventKey string, rcv chan internal.State) {
 
 	// myCount := 0
@@ -233,7 +281,7 @@ func WithDataProviderClient(eventKey string, rcv chan internal.State) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Printf("chanValue: %v more: %v\n", s.Timestamp, more)
+			// fmt.Printf("chanValue: %v more: %v\n", s.Timestamp, more)
 			// time.Sleep(100 * time.Millisecond)
 			if !more {
 				fmt.Println("closed channel signaled")
@@ -241,7 +289,7 @@ func WithDataProviderClient(eventKey string, rcv chan internal.State) {
 			}
 		}
 	}()
-	fmt.Println("fertig")
+
 }
 
 func getDataproviderClient() *client.Client {
