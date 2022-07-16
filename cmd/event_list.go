@@ -51,9 +51,13 @@ func listEvents() {
 }
 
 func printEventOverview(e *internal.Event) {
+	fmt.Printf("%s\n", composeEventOverview(e))
+}
+
+func composeEventOverview(e *internal.Event) string {
 	recDate, err := time.Parse("2006-01-02T15:04:05", e.RecordDate)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("Id: %3d Date: %s Name: %v \n", e.Id, recDate.Format("2006-01-02"), e.Name)
+	return fmt.Sprintf("Id: %3d Date: %s Name: %v", e.Id, recDate.Format("2006-01-02"), e.Name)
 }

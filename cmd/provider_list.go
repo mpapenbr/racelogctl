@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"racelogctl/internal"
 	"racelogctl/wamp"
 
@@ -58,7 +59,8 @@ func init() {
 }
 
 func providerList() {
-	wamp.ListProvider(func(e *internal.Event, i int) bool {
+	wamp.ConsumeProviders(func(e *internal.Event, i int) bool {
+		fmt.Printf("%v\n", e)
 		return true
 	})
 }
