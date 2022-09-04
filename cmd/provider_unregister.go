@@ -32,13 +32,11 @@ import (
 // unregisterCmd represents the unregister command
 var unregisterCmd = &cobra.Command{
 	Use:   "unregister <eventKey>",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Unregisters a race provider by its eventKey",
+	Long: `Unregisters a race provider by its eventKey.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+This command may be used if the race provider was terminated before the race ended. 
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 

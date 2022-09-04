@@ -38,8 +38,8 @@ import (
 // liveCmd represents the live command
 var liveCmd = &cobra.Command{
 	Use:   "live",
-	Short: "simulates clients listenings to live events",
-	Long: `simulates clients listenings to live events
+	Short: "Simulates clients listenings to live events",
+	Long: `Simulates clients listenings to live events
 
 Each worker will do the following:
 - pick one live event

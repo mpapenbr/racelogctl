@@ -35,7 +35,7 @@ import (
 // registerCmd represents the register command
 var registerCmd = &cobra.Command{
 	Use:   "register",
-	Short: "Register an event",
+	Short: "Register an event (Note: use only for development)",
 	Long: `This command performs the register procedure of an event. 
 The registration is usually performed by the racelogger.
 For debugging purpose this command may be used to initialize the backend in a similar manner.`,

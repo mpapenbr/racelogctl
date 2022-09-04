@@ -40,13 +40,17 @@ import (
 // timedCmd represents the timed command
 var timedCmd = &cobra.Command{
 	Use:   "timed",
-	Short: "simulate running a number of raceloggers for a limited time",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Simulate running a number of raceloggers for a limited time",
+	Long: `Simulate running a number of raceloggers for a limited time.
+	
+NOTE: This command performs the recording of events.
+Example:
+racelogctl stress timed --worker 5 --speed 2 --duration 60m --minSessionDuration 30m
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+This will start a test for 60 minutes with 5 workers. 
+They will produce copies of existing races which last at least 30 minutes.
+The recording speed is 2 which means, instead of sending a packet each second, 
+they will send a packet every 500 milliseconds.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		setupTimedProducer()
 	},
@@ -73,7 +77,7 @@ func (j TimedJobRequest) output() string {
 func init() {
 	stressCmd.AddCommand(timedCmd)
 	timedCmd.Flags().IntVar(&speed, "speed", 1, "Recording speed (<=0 means: go as fast as possible)")
-	timedCmd.Flags().StringVar(&testDurationArg, "duration", testDurationArg, "How long should the test rund")
+	timedCmd.Flags().StringVar(&testDurationArg, "duration", testDurationArg, "How long should the test run")
 	timedCmd.Flags().StringVar(&minSessionDuration, "min-session-duration", minSessionDuration, "the minimum session duration of the source")
 	timedCmd.Flags().StringVarP(&internal.DataproviderPassword, "dataprovider-password", "p", "", "sets the Dataprovider password for this action")
 

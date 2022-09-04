@@ -31,7 +31,7 @@ import (
 // stressCmd represents the stress command
 var stressCmd = &cobra.Command{
 	Use:   "stress",
-	Short: "This command is used for stress testing the application",
+	Short: "Commands for stress testing the app. Used for development ONLY",
 	Long:  "",
 }
 

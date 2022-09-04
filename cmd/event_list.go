@@ -1,6 +1,5 @@
 /*
 Copyright © 2022 Markus Papenbrock
-
 */
 package cmd
 
@@ -16,7 +15,7 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "lists all available events",
+	Short: "Lists all available events",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
