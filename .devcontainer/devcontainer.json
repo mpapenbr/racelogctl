@@ -25,7 +25,11 @@
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"golang.Go"
+		"golang.Go",
+		"eamodio.gitlens",
+		"GitHub.vscode-pull-request-github",
+		"ms-azuretools.vscode-docker",
+		"EditorConfig.EditorConfig"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
