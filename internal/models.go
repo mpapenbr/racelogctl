@@ -70,6 +70,15 @@ type Payload struct {
 	Session  []interface{}   `json:"session"`
 	Messages [][]interface{} `json:"messages"`
 }
+
+type SpeedmapPayload struct {
+	Data        map[string][]int `json:"data"`
+	ChunkSize   int              `json:"chunkSize"`
+	CurrentPos  float64          `json:"currentPos"`
+	TrackLength float64          `json:"trackLength"`
+}
+
+// TODO: rename to WampMessage?
 type State struct {
 	Type      int     `json:"type"` // 1: full data, 8: delta data
 	Payload   Payload `json:"payload"`

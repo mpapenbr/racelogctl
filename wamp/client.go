@@ -169,6 +169,22 @@ func GetStatesWithClient(client *client.Client, id int, event *internal.Event, s
 
 }
 
+func GetSpeedmaps(id int, event *internal.Event, start float64, num int) []internal.State {
+	client := GetClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.public.archive.speedmap", nil, wamp.List{id, start, num}, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+		return nil
+	}
+
+	ret, _ := wamp.AsList(result.Arguments[0])
+	fmt.Printf("%v", ret)
+	return []internal.State{}
+
+}
+
 func RegisterProvider(registerMsg internal.RegisterMessage) {
 	client := getDataproviderClient()
 	defer client.Close()
