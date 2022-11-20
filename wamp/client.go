@@ -185,6 +185,28 @@ func GetSpeedmaps(id int, event *internal.Event, start float64, num int) []inter
 
 }
 
+func GetEventAvgLaps(id int, interval int) []internal.AverageLapTime {
+	client := GetClient()
+	defer client.Close()
+	ctx := context.Background()
+	result, err := client.Call(ctx, "racelog.public.archive.avglap_over_time", nil, wamp.List{id, interval}, nil, nil)
+	if err != nil {
+		logger.Fatal(err)
+		return nil
+	}
+
+	work, _ := wamp.AsList(result.Arguments[0])
+	ret := make([]internal.AverageLapTime, 0)
+	for _, item := range work {
+		alt := internal.AverageLapTime{}
+		jsonData, _ := json.Marshal(item)
+		json.Unmarshal(jsonData, &alt)
+		ret = append(ret, alt)
+	}
+	return ret
+
+}
+
 func RegisterProvider(registerMsg internal.RegisterMessage) {
 	client := getDataproviderClient()
 	defer client.Close()

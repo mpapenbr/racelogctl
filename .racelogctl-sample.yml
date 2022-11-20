@@ -1,0 +1,4 @@
+realm: racelog
+url: ws://localhost:8091/ws
+
+pretty: true
