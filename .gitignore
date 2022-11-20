@@ -22,4 +22,5 @@ stress-browser*.json
 dist/
 
 .gitconfig.local*
+.racelogctl.yml
 .npmrc

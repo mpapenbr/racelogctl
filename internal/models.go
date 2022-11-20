@@ -100,3 +100,11 @@ type ResultMessage struct {
 	Message string        `json:"message"`
 	Data    []interface{} `json:"data"`
 }
+
+type AverageLapTime struct {
+	Timestamp   float64         `json:"timestamp"`
+	SessionTime float64         `json:"sessionTime"`
+	TimeOfDay   float64         `json:"timeOfDay"`
+	TrackTemp   float64         `json:"trackTemp"`
+	Laptimes    map[int]float64 `json:"laptimes"`
+}
