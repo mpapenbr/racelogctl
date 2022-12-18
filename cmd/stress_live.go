@@ -114,8 +114,8 @@ func setupScenario() {
 
 func simBrowserClient(idx int, queue chan int, wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
-	client := wamp.GetClient()
-	defer client.Close()
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
 
 	for {
 		select {
@@ -126,7 +126,7 @@ func simBrowserClient(idx int, queue chan int, wg *sync.WaitGroup, ctx context.C
 			fmt.Printf("Dummy: %v\n", dummy)
 
 			fmt.Println("get available live events")
-			providers := wamp.ListProviders()
+			providers, _ := pc.ProviderList()
 			if (len(providers)) == 0 {
 				log.Println("no event avail. pausing")
 				time.Sleep(workerPause)
@@ -148,11 +148,11 @@ func simBrowserClient(idx int, queue chan int, wg *sync.WaitGroup, ctx context.C
 }
 
 func simulateLiveListener(idx int, eventKey string, queue chan int) {
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
 
-	client := wamp.GetClient()
-	defer client.Close()
+	defer pc.Close()
 
-	wamp.GetLiveAnalysisData(eventKey) // don't need, just to issue the request
+	pc.GetLiveAnalysisData(eventKey) // don't need, just to issue the request
 
 	topic := fmt.Sprintf("racelog.public.live.state.%s", eventKey)
 	msgNum := 0
@@ -164,7 +164,7 @@ func simulateLiveListener(idx int, eventKey string, queue chan int) {
 		// log.Printf("Event: %+v\n", event)
 
 	}
-	err := client.Subscribe(topic, handler, nil)
+	err := pc.Client().Subscribe(topic, handler, nil)
 	if err != nil {
 		log.Fatal("subscribe error: ", err)
 	}
@@ -177,13 +177,13 @@ func simulateLiveListener(idx int, eventKey string, queue chan int) {
 		}
 		log.Printf("i: %v Unsub in %v\n", idx, unsubTimer)
 		time.Sleep(unsubTimer)
-		client.Unsubscribe(topic)
+		pc.Client().Unsubscribe(topic)
 		log.Printf("i: %v: unsubscribed\n", idx)
-		client.Close()
+		pc.Client().Close()
 
 	}()
 	log.Printf("i: %v vor done \n", idx)
-	<-client.Done()
+	<-pc.Client().Done()
 	log.Printf("subsriber %d finished\n", idx)
 
 	time.Sleep(workerPause)

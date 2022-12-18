@@ -64,5 +64,6 @@ func init() {
 }
 
 func unregisterEventProvider(eventKey string) {
-	wamp.UnregisterProvider(eventKey)
+	dpc := wamp.NewDataProviderClient(internal.Url, internal.Realm, internal.DataproviderPassword)
+	dpc.UnregisterProvider(eventKey)
 }

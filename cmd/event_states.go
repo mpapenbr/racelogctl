@@ -24,6 +24,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"racelogctl/internal"
 	"racelogctl/wamp"
@@ -82,14 +83,19 @@ func init() {
 }
 
 func fetchStates(eventId int, outFile *os.File) {
-	event := wamp.GetEvent(eventId)
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
+	event, err := pc.GetEvent(eventId)
+	if err != nil {
+		log.Fatalf("Error getting event: %v\n", err)
+	}
 	fmt.Printf("event: %v\n", event)
 	if internal.FullStateData {
 		fetchFullData(event, outFile)
 		return
 	}
 	fmt.Printf("Fetching %d states beginning at %d\n", internal.Num, internal.From)
-	states := wamp.GetStates(eventId, event, float64(internal.From), internal.Num)
+	states := pc.GetStates(eventId, float64(internal.From), internal.Num)
 	fmt.Printf("\n---\nresulting states\n")
 	for _, entry := range states {
 		jsonData, _ := json.Marshal(entry)
@@ -100,13 +106,15 @@ func fetchStates(eventId int, outFile *os.File) {
 
 func fetchFullData(event *internal.Event, outFile *os.File) {
 	// var lastTimestamp float64 = 0
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
 	from := event.Data.ReplayInfo.MinTimestamp
 	if internal.From != 0 {
 		from = float64(internal.From)
 	}
 	for goon := true; goon; {
 		fmt.Printf("Fetching %d states beginning at %v\n", internal.Num, from)
-		states := wamp.GetStates(int(event.Id), event, from, internal.Num)
+		states := pc.GetStates(int(event.Id), from, internal.Num)
 		goon = len(states) == internal.Num
 		for _, entry := range states {
 			jsonData, _ := json.Marshal(entry)

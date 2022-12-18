@@ -10,7 +10,8 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/main.go",
-      "args": ["event", "states", "2", "--num", "2"]
+      // "args": ["event", "states", "2", "--num", "2"]
+      "args": ["provider", "list"]
     },
     {
       "name": "Launch file",

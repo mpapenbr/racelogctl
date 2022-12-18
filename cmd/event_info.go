@@ -24,6 +24,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"racelogctl/internal"
 	"racelogctl/wamp"
 	"strconv"
@@ -78,10 +79,12 @@ func init() {
 }
 
 func eventInfo(id int) {
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
 
-	event := wamp.GetEvent(id)
-	if event == nil {
-		fmt.Printf("No event found for %v\n", id)
+	event, err := pc.GetEvent(id)
+	if err != nil {
+		log.Fatalf("No event found for %v\n", id)
 		return
 	}
 	// fmt.Printf("%+v\n", event)

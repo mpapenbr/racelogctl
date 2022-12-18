@@ -67,8 +67,11 @@ func init() {
 
 func processEvent(eventId int) {
 
+	ac := wamp.NewAdminClient(internal.Url, internal.Realm, internal.AdminPassword)
+	defer ac.Close()
+
 	fmt.Printf("Processing now event %v\n", eventId)
-	result := wamp.ProcessEvent(eventId)
+	result := ac.ProcessEvent(eventId)
 	if len(result.Error) > 0 {
 		fmt.Printf("Error: %s\n", result.Error)
 	} else {

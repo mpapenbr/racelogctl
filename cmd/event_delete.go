@@ -23,6 +23,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"racelogctl/internal"
 	"racelogctl/wamp"
@@ -71,7 +72,12 @@ func init() {
 
 func deleteEvent(eventId int) {
 
+	ac := wamp.NewAdminClient(internal.Url, internal.Realm, internal.AdminPassword)
+	defer ac.Close()
 	fmt.Printf("Deleting now event %v\n", eventId)
-	wamp.DeleteEvent(eventId)
+	err := ac.DeleteEvent(eventId)
+	if err != nil {
+		log.Fatalf("Error deleting event %v\n", err)
+	}
 	fmt.Printf("Deleted  event %v\n", eventId)
 }

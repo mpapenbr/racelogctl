@@ -54,8 +54,10 @@ func init() {
 }
 
 func providerList() {
-	wamp.ConsumeProviders(func(e *internal.Event, i int) bool {
-		fmt.Printf("%v\n", e)
-		return true
-	})
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
+	providers, _ := pc.ProviderList()
+	for _, e := range providers {
+		fmt.Printf("%+v\n", e)
+	}
 }
