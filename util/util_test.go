@@ -95,8 +95,8 @@ func TestProcessDeltaStates(t *testing.T) {
 			Messages: [][]interface{}{{"M1", "M2"}},
 		},
 	}
-	type8 := internal.State{
-		Type: 8,
+	type2 := internal.State{
+		Type: 2,
 		Payload: internal.Payload{
 			Cars:     [][]interface{}{{0, 0, "OUT"}, {0, 1, 20}, {1, 2, 99.99}},
 			Session:  []interface{}{[]interface{}{0, "C"}, []interface{}{1, "D"}},
@@ -141,13 +141,13 @@ func TestProcessDeltaStates(t *testing.T) {
 			want: type1,
 		},
 		{
-			name: "incoming type 8",
-			args: args{type1, type8},
+			name: "incoming type 2",
+			args: args{type1, type2},
 			want: result,
 		},
 		{
-			name: "incoming type 8 on empty type 1",
-			args: args{type1Empty, type8},
+			name: "incoming type 2 on empty type 1",
+			args: args{type1Empty, type2},
 			want: result2,
 		},
 	}

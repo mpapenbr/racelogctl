@@ -58,14 +58,14 @@ func isMinSessionLength(e *internal.Event, minSessionLengthMinutes int) bool {
 	return (e.Data.ReplayInfo.MaxSessionTime - e.Data.ReplayInfo.MinSessionTime) > float64(minSessionLengthMinutes*60)
 }
 
-func computeAvailableEvents(minSessionLengthMinutes int) []internal.Event {
-	availableEvents := []internal.Event{}
-	allEvents := wamp.GetEventList()
+func computeAvailableEvents(pc *wamp.PublicClient, minSessionLengthMinutes int) []*internal.Event {
+	availableEvents := []*internal.Event{}
+	allEvents, _ := pc.GetEventList()
 	for _, event := range allEvents {
-		validSource := raceLoggerVersion(&event) && isMinSessionLength(&event, minSessionLengthMinutes)
+		validSource := raceLoggerVersion(event) && isMinSessionLength(event, minSessionLengthMinutes)
 		if validSource {
 			availableEvents = append(availableEvents, event)
-			printEventOverview(&event)
+			printEventOverview(event)
 		}
 	}
 	return availableEvents

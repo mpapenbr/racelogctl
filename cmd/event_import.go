@@ -70,7 +70,11 @@ func importData() {
 	scanner := bufio.NewScanner(file)
 	// optionally, resize scanner's capacity for lines over 64K, see next example
 	sender := make(chan internal.State)
-	wamp.WithDataProviderClient(internal.EventKey, sender)
+
+	dataprovider := wamp.NewDataProviderClient(internal.Url, internal.Realm, internal.DataproviderPassword)
+	defer dataprovider.Close()
+	dataprovider.PublishStateFromChannel(internal.EventKey, sender)
+
 	idx := 0
 	for scanner.Scan() {
 		line := scanner.Text()

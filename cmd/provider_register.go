@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"racelogctl/internal"
 	"racelogctl/wamp"
@@ -82,8 +83,11 @@ func register() {
 	if len(internal.EventName) > 0 {
 		registerMsg.Info.Name = internal.EventName
 	}
-
-	wamp.RegisterProvider(registerMsg)
+	dpc := wamp.NewDataProviderClient(internal.Url, internal.Realm, internal.DataproviderPassword)
+	err := dpc.RegisterProvider(registerMsg)
+	if err != nil {
+		log.Fatalf("Error registering event: %v", err)
+	}
 }
 
 func readSampleFile(filename string) []byte {

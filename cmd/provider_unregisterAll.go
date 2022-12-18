@@ -1,10 +1,10 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"log"
 	"racelogctl/internal"
 	"racelogctl/wamp"
 
@@ -27,8 +27,14 @@ func init() {
 }
 
 func unregisterAll() {
-	wamp.ConsumeProviders(func(e *internal.Event, i int) bool {
-		wamp.UnregisterProvider(e.EventKey)
-		return true
-	})
+	dpc := wamp.NewDataProviderClient(internal.Url, internal.Realm, internal.DataproviderPassword)
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	providers, err := pc.ProviderList()
+	if err != nil {
+		log.Fatalf("Error reading provider list: %v\n", err)
+	}
+	for _, e := range providers {
+		dpc.UnregisterProvider(e.EventKey)
+	}
+
 }

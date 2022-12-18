@@ -27,17 +27,22 @@ import (
 	"racelogctl/internal"
 	"racelogctl/wamp"
 	"strconv"
-	"time"
 
+	"github.com/blang/semver/v4"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// avgLapsCmd represents the avgLaps command
-var avgLapsCmd = &cobra.Command{
-	Use:   "avgLaps <eventId>",
-	Short: "Get average laptimes by car classes over time for an event",
-	Long:  ``,
+// dummyCmd represents the dummy command
+var dummyCmd = &cobra.Command{
+	Use:   "dummy",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
 		// println("in event_info preRunE")
@@ -45,46 +50,41 @@ var avgLapsCmd = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) > 0 {
-			eventId, err := strconv.Atoi(args[0])
-			if err != nil {
-				fmt.Println(err)
-				return
-			} else {
-				eventAvgLaps(eventId)
-			}
+
+		eventId, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println(err)
+			return
 		} else {
-			fmt.Println("requires an event id")
+			dummy(eventId)
 		}
 
 	},
+	Args: cobra.ExactArgs(1),
 }
 
 func init() {
-	eventCmd.AddCommand(avgLapsCmd)
+	eventCmd.AddCommand(dummyCmd)
 
-	avgLapsCmd.Flags().IntVar(&internal.Interval, "interval", 300, "Interval in seconds")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// avgLapsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// avgLapsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func eventAvgLaps(id int) {
+func dummy(eventId int) {
 	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
-	defer pc.Close()
+	event, _ := pc.GetEvent(eventId)
 
-	avgLaps, err := pc.GetEventAvgLaps(id, internal.Interval)
+	sourceVersion := event.Data.Info.RaceloggerVersion
+	if len(sourceVersion) == 0 {
+		sourceVersion = "0.0.0"
+	}
+	fmt.Printf("recieving raceloggerVersion: %s\n", sourceVersion)
+	v, err := semver.Parse(sourceVersion)
 	if err != nil {
-		log.Fatalf("Error reading avgLaps: %v", err)
+		log.Fatalf("Error parsing version: %v\n", err)
 	}
-	for _, item := range avgLaps {
-		fmt.Printf("%.0f (%s): track: %.0f %+v\n", item.Timestamp, time.Unix(int64(item.Timestamp), 0), item.TrackTemp, item.Laptimes)
+	r, err := semver.ParseRange(">=0.4.4")
+	if err != nil {
+		log.Fatalf("Error parsing range: %v\n", err)
 	}
+	fmt.Printf("hasCarData: %v\n", r(v))
+
 }

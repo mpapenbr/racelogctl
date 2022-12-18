@@ -24,6 +24,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"racelogctl/internal"
 	"racelogctl/wamp"
@@ -80,14 +81,19 @@ func init() {
 }
 
 func fetchSpeedmapRangeEntries(eventId int, outFile *os.File) {
-	event := wamp.GetEvent(eventId)
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
+	event, err := pc.GetEvent(eventId)
+	if err != nil {
+		log.Fatalf("Error getting event: %v\n", err)
+	}
 	fmt.Printf("event: %v\n", event)
 	if internal.FullStateData {
 		fetchSpeedmapFull(event, outFile)
 		return
 	}
 	fmt.Printf("Fetching %d entries beginning at %d\n", internal.Num, internal.From)
-	entries := wamp.GetSpeedmaps(eventId, event, float64(internal.From), internal.Num)
+	entries, err := pc.GetSpeedmaps(eventId, float64(internal.From), internal.Num)
 	fmt.Printf("\n---\nresulting speedmap entries\n")
 	for _, entry := range entries {
 		jsonData, _ := json.Marshal(entry.Payload)
@@ -98,19 +104,22 @@ func fetchSpeedmapRangeEntries(eventId int, outFile *os.File) {
 
 func fetchSpeedmapFull(event *internal.Event, outFile *os.File) {
 	// var lastTimestamp float64 = 0
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
+
 	from := event.Data.ReplayInfo.MinTimestamp
 	if internal.From != 0 {
 		from = float64(internal.From)
 	}
 	for goon := true; goon; {
 		fmt.Printf("Fetching %d speedmaps beginning at %v\n", internal.Num, from)
-		states := wamp.GetSpeedmaps(int(event.Id), event, from, internal.Num)
-		goon = len(states) == internal.Num
-		for _, entry := range states {
+		speedmaps, _ := pc.GetSpeedmaps(int(event.Id), from, internal.Num)
+		goon = len(speedmaps) == internal.Num
+		for _, entry := range speedmaps {
 			jsonData, _ := json.Marshal(entry)
 			outFile.WriteString(fmt.Sprintln(string(jsonData)))
 		}
-		from = states[len(states)-1].Timestamp + 0.0001
+		from = speedmaps[len(speedmaps)-1].Timestamp + 0.0001
 	}
 
 }

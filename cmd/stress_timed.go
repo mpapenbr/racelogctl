@@ -29,10 +29,12 @@ import (
 	"log"
 	"math/rand"
 	"racelogctl/internal"
+	"racelogctl/util"
 	"racelogctl/wamp"
 	"sync"
 	"time"
 
+	"github.com/blang/semver/v4"
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +60,7 @@ they will send a packet every 500 milliseconds.`,
 
 var minSessionDuration string = "5m" // the minimum session duration of the source
 var nextJobId = 1
-var availableEvents []internal.Event
+var availableEvents []*internal.Event
 
 type TimedJobRequest struct {
 	id          int
@@ -80,6 +82,7 @@ func init() {
 	timedCmd.Flags().StringVar(&testDurationArg, "duration", testDurationArg, "How long should the test run")
 	timedCmd.Flags().StringVar(&minSessionDuration, "min-session-duration", minSessionDuration, "the minimum session duration of the source")
 	timedCmd.Flags().StringVarP(&internal.DataproviderPassword, "dataprovider-password", "p", "", "sets the Dataprovider password for this action")
+	timedCmd.Flags().StringVar(&internal.SourceUrl, "source-url", "", "sets the url of the source server")
 
 	// Here you will define your flags and configuration settings.
 
@@ -93,8 +96,14 @@ func init() {
 }
 
 func setupTimedProducer() {
+	source := internal.SourceUrl
+	if len(source) == 0 {
+		source = internal.Url
+	}
+	pc := wamp.NewPublicClient(source, internal.Realm)
+	defer pc.Close()
 	minDuration, _ := time.ParseDuration(minSessionDuration)
-	availableEvents = computeAvailableEvents(int(minDuration.Minutes()))
+	availableEvents = computeAvailableEvents(pc, int(minDuration.Minutes()))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	// setup worker for producer
@@ -110,7 +119,7 @@ func setupTimedProducer() {
 	}
 
 	for jobId := 1; jobId <= internal.Worker; jobId++ {
-		queue <- &TimedJobRequest{id: jobId, eventSource: &availableEvents[rand.Intn(len(availableEvents))]}
+		queue <- &TimedJobRequest{id: jobId, eventSource: availableEvents[rand.Intn(len(availableEvents))]}
 	}
 	nextJobId = internal.Worker + 1
 
@@ -135,8 +144,18 @@ func setupTimedProducer() {
 
 func raceloggerWorker(idx int, requestChan chan *TimedJobRequest, resultChan chan *TimedJobResult, wg *sync.WaitGroup, ctx context.Context) {
 	defer wg.Done()
-	client := wamp.GetClient()
-	defer client.Close()
+
+	source := internal.SourceUrl
+	if len(source) == 0 {
+		source = internal.Url
+	}
+
+	pc := wamp.NewPublicClient(source, internal.Realm)
+	dataprovider := wamp.NewDataProviderClient(internal.Url, internal.Realm, internal.DataproviderPassword)
+
+	defer pc.Close()
+	defer dataprovider.Close()
+
 	// get a job from the queue
 	// do something
 
@@ -147,20 +166,33 @@ func raceloggerWorker(idx int, requestChan chan *TimedJobRequest, resultChan cha
 			return
 		case job := <-requestChan:
 			currentRun := 0
-			currentIdx := 0
+			currentStateIdx := 0
+			currentSpeedmapIdx := 0
 			log.Printf("Worker %d got job %v\n", idx, job.output())
-			recordingEventKey := registerNewEvent(job.eventSource)
-			sender := make(chan internal.State)
+			registerMsg := createRegisterMessage(job.eventSource)
+			dataprovider.RegisterProvider(registerMsg)
+			recordingEventKey := registerMsg.EventKey
+			stateChannel := make(chan internal.State)
+			speedMapChannel := make(chan internal.SpeedmapMessage)
 			finalizeRecorder := func() {
-				wamp.UnregisterProvider(recordingEventKey)
+				dataprovider.UnregisterProvider(recordingEventKey)
 				resultChan <- &TimedJobResult{jobId: job.id, workerId: idx}
 			}
 
-			wamp.WithDataProviderClient(recordingEventKey, sender)
+			dataprovider.PublishStateFromChannel(recordingEventKey, stateChannel)
+			dataprovider.PublishSpeedmapDataFromChannel(recordingEventKey, speedMapChannel)
 
 			from := job.eventSource.Data.ReplayInfo.MinTimestamp
-			states := wamp.GetStatesWithClient(client, int(job.eventSource.Id), job.eventSource, from, numStates)
+			states := pc.GetStates(int(job.eventSource.Id), from, numStates)
+			speedMaps, _ := pc.GetSpeedmaps(int(job.eventSource.Id), from, numSpeedMaps)
+			// log.Printf("Got %d speedmap entries\n", len(speedMaps))
+			carDataAvail := semver.MustParseRange(">=0.4.4")
+			if carDataAvail(semver.MustParse(util.GetEventRaceloggerVersion(job.eventSource))) {
+				carData, _ := pc.GetCarData(int(job.eventSource.Id))
+				dataprovider.PublishCarData(recordingEventKey, carData)
+			}
 
+			hasMoreSpeedmapData := len(speedMaps) > 0 // at this point we know: there are speedmaps and may be even more
 			for goon := true; goon; {
 				select {
 				case <-ctx.Done():
@@ -169,23 +201,40 @@ func raceloggerWorker(idx int, requestChan chan *TimedJobRequest, resultChan cha
 					return
 				default:
 					// log.Printf("Worker %d Iter %d\n", idx, currentRun)
-					sender <- states[currentIdx]
+					stateChannel <- states[currentStateIdx]
 					if speed > 0 {
 						sleep := 1000 / speed
 						// fmt.Printf("Worker %d Sleeping for %+v ms\n", idx, sleep)
 						time.Sleep(time.Duration(sleep) * time.Millisecond)
+
 					}
+					if currentSpeedmapIdx < len(speedMaps) {
+
+						if speedMaps[currentSpeedmapIdx].Timestamp < states[currentStateIdx].Timestamp {
+							// log.Printf("Worker %d Iter %d Sending Speedmap %d\n", idx, currentRun, currentSpeedmapIdx)
+							speedMapChannel <- *speedMaps[currentSpeedmapIdx]
+							currentSpeedmapIdx++
+						}
+					} else {
+						if hasMoreSpeedmapData {
+							speedMaps, _ = pc.GetSpeedmaps(int(job.eventSource.Id), speedMaps[len(speedMaps)-1].Timestamp, numSpeedMaps)
+							hasMoreSpeedmapData = len(speedMaps) > 0
+							currentSpeedmapIdx = 0
+							// log.Printf("Worker %d Iter %d Reading %d new speedmap\n", idx, currentRun, len(speedMaps))
+						}
+					}
+
 					currentRun++
-					currentIdx++
-					goon = currentIdx < len(states)
+					currentStateIdx++
+					goon = currentStateIdx < len(states)
 					// check if more states are available
 					if !goon {
 						from = states[len(states)-1].Timestamp + 0.0001
-						states = wamp.GetStatesWithClient(client, int(job.eventSource.Id), job.eventSource, from, numStates)
-						log.Printf("Worker %d get %d new states\n", idx, len(states))
+						states = pc.GetStates(int(job.eventSource.Id), from, numStates)
+						// log.Printf("Worker %d get %d new states\n", idx, len(states))
 
 						goon = len(states) > 0
-						currentIdx = 0
+						currentStateIdx = 0
 					}
 				}
 			}
@@ -197,11 +246,12 @@ func raceloggerWorker(idx int, requestChan chan *TimedJobRequest, resultChan cha
 	}
 }
 
-func registerNewEvent(event *internal.Event) string {
+func createRegisterMessage(event *internal.Event) internal.RegisterMessage {
 	registerMsg := internal.RegisterMessage{}
 
 	registerMsg.Manifests = event.Data.Manifests
 	registerMsg.Info = event.Data.Info
+	registerMsg.RecordDate = float64(time.Now().Unix())
 	registerMsg.Info.Name = fmt.Sprintf("stresstest-%s", time.Now().Format("20060102-150405"))
 	h := md5.New()
 	io.WriteString(h, registerMsg.Info.Name)
@@ -211,8 +261,7 @@ func registerNewEvent(event *internal.Event) string {
 	if eventKey != "" {
 		registerMsg.EventKey = eventKey
 	}
-	wamp.RegisterProvider(registerMsg)
-	return registerMsg.EventKey
+	return registerMsg
 }
 
 func timedResultCollector(requests chan *TimedJobRequest, results chan *TimedJobResult, ctx context.Context) {
@@ -228,7 +277,7 @@ func timedResultCollector(requests chan *TimedJobRequest, results chan *TimedJob
 		case result, ok := <-results:
 			log.Printf("Got result: %v ok: %v\n", result, ok)
 			nextJobId++
-			requests <- &TimedJobRequest{id: nextJobId, eventSource: &availableEvents[rand.Intn(len(availableEvents))]}
+			requests <- &TimedJobRequest{id: nextJobId, eventSource: availableEvents[rand.Intn(len(availableEvents))]}
 		}
 	}
 }

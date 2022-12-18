@@ -68,7 +68,13 @@ func simulateLiveRecording() {
 		return
 
 	}
-	event := wamp.GetEvent(sourceEventId)
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
+	event, err := pc.GetEvent(sourceEventId)
+	if err != nil {
+		log.Fatalf("Error getting event: %v\n", err)
+	}
+
 	if len(event.Data.Info.RaceloggerVersion) == 0 {
 		log.Fatalf("Event %v %v not suitable for this function. Need at least raceLoggerVersion 0.4.0", sourceEventId, event.Name)
 
@@ -86,8 +92,11 @@ func simulateLiveRecording() {
 
 	if eventKey != "" {
 		registerMsg.EventKey = eventKey
+
 	}
-	wamp.RegisterProvider(registerMsg)
+	dpc := wamp.NewDataProviderClient(internal.Url, internal.Realm, internal.DataproviderPassword)
+	dpc.RegisterProvider(registerMsg)
+	defer dpc.Close()
 	producerDone := make(chan bool)
 	// create producer
 	go simulateRacelogger(event, registerMsg.EventKey, producerDone)
@@ -107,7 +116,8 @@ func simulateLiveRecording() {
 
 	log.Printf("Producer done\n")
 
-	wamp.UnregisterProvider(registerMsg.EventKey)
+	dpc.UnregisterProvider(registerMsg.EventKey)
+
 	log.Printf("Unregistered event\n")
 
 	time.Sleep(time.Duration(2) * time.Second)
@@ -116,8 +126,9 @@ func simulateLiveRecording() {
 
 func simulateBrowserListener(idx int, eventKey string) {
 
-	client := wamp.GetClient()
-	defer client.Close()
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
+
 	topic := fmt.Sprintf("racelog.public.live.state.%s", eventKey)
 	msgNum := 0
 	handler := func(event *nexusWamp.Event) {
@@ -130,28 +141,30 @@ func simulateBrowserListener(idx int, eventKey string) {
 			// log.Printf("Event: %+v\n", event)
 		}
 	}
-	err := client.Subscribe(topic, handler, nil)
+	err := pc.Client().Subscribe(topic, handler, nil)
 	if err != nil {
 		log.Fatal("subscribe error: ", err)
 	}
-	<-client.Done()
+	<-pc.Client().Done()
 	log.Printf("subsriber %d finished\n", idx)
 }
 
 func simulateRacelogger(event *internal.Event, recordingEventKey string, done chan bool) {
-	client := wamp.GetClient()
-	defer client.Close()
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
 
 	fetches := 0
 	numPackets := 0
 
 	sender := make(chan internal.State)
-	wamp.WithDataProviderClient(recordingEventKey, sender)
+	dataprovider := wamp.NewDataProviderClient(internal.Url, internal.Realm, internal.DataproviderPassword)
+	defer dataprovider.Close()
+	dataprovider.PublishStateFromChannel(recordingEventKey, sender)
 
 	from := event.Data.ReplayInfo.MinTimestamp
 	for goon := true; goon; {
 		// fmt.Printf("Fetching %d states beginning at %d\n", numStates, int64(from))
-		states := wamp.GetStatesWithClient(client, int(event.Id), event, from, numStates)
+		states := pc.GetStates(int(event.Id), from, numStates)
 		fetches += 1
 		numPackets += len(states)
 		// fmt.Printf("Got %v states\n", len(states))

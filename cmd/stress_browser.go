@@ -24,6 +24,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
 	"os"
@@ -33,14 +34,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gammazero/nexus/v3/client"
 	"github.com/spf13/cobra"
 )
-
-var speed = 1         // use this replay speed
-var numRuns = 1       // how many repetitions
-var numStates = 30    // how many states should be fetched in go
-var raceLimitMin = -1 // if > 0, pick only races shorter than this amount
 
 // browserCmd represents the browser command
 var browserCmd = &cobra.Command{
@@ -103,7 +98,12 @@ func init() {
 }
 
 func simulateBrowser() {
-	events := wamp.GetEventList()
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
+	events, err := pc.GetEventList()
+	if err != nil {
+		log.Fatal("Could not read event list", err)
+	}
 
 	queue := make(chan *jobData)
 	results := make(chan *jobResult)
@@ -127,8 +127,8 @@ func simulateBrowser() {
 
 }
 
-func printStatsSummary(stats *statistics, events []internal.Event) {
-	lookup := make(map[int]internal.Event, len(events))
+func printStatsSummary(stats *statistics, events []*internal.Event) {
+	lookup := make(map[int]*internal.Event, len(events))
 	for _, e := range events {
 		lookup[int(e.Id)] = e
 	}
@@ -201,7 +201,7 @@ func minMaxAvg(items []time.Duration) durationStats {
 	return durationStats{min, max, time.Duration(avg), sum}
 }
 
-func createResultCollector(events []internal.Event, results chan *jobResult, stats chan *statistics, wg *sync.WaitGroup) {
+func createResultCollector(events []*internal.Event, results chan *jobResult, stats chan *statistics, wg *sync.WaitGroup) {
 
 	byEventSummary := make(map[int]summary)
 	byWorkerSummary := make(map[int]summary)
@@ -244,14 +244,14 @@ func createResultCollector(events []internal.Event, results chan *jobResult, sta
 }
 
 func worker(idx int, queue chan *jobData, results chan *jobResult, wg *sync.WaitGroup) {
-	client := wamp.GetClient()
+
 	defer wg.Done()
-	defer client.Close()
+
 	for {
 		job, ok := <-queue
 		if ok {
 			start := time.Now()
-			numFetches, numPackets := simulateFrontendFetching(client, job.event)
+			numFetches, numPackets := simulateFrontendFetching(job.event)
 			duration := time.Since((start))
 			results <- &jobResult{workerId: idx + 1, jobId: job.id, event: job.event, duration: duration, numFetches: numFetches, numStates: numPackets}
 			// fmt.Printf("Job %3d %v-%v done in %s\n", job.id, job.event.Id, job.event.Name, duration)
@@ -263,7 +263,7 @@ func worker(idx int, queue chan *jobData, results chan *jobResult, wg *sync.Wait
 	}
 }
 
-func createJobs(ch chan<- *jobData, events []internal.Event, numRuns int) {
+func createJobs(ch chan<- *jobData, events []*internal.Event, numRuns int) {
 	pickShortRace := func() int {
 		for {
 			pick := rand.Intn(len(events))
@@ -283,17 +283,19 @@ func createJobs(ch chan<- *jobData, events []internal.Event, numRuns int) {
 		event := events[pick]
 
 		fmt.Printf("Run %03d picked event %d: %s\n", i+1, event.Id, event.Name)
-		ch <- &jobData{id: i + 1, event: &event}
+		ch <- &jobData{id: i + 1, event: event}
 	}
 }
 
-func simulateFrontendFetching(client *client.Client, event *internal.Event) (int, int) {
+func simulateFrontendFetching(event *internal.Event) (int, int) {
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	defer pc.Close()
 	fetches := 0
 	numPackets := 0
 	from := event.Data.ReplayInfo.MinTimestamp
 	for goon := true; goon; {
-		// fmt.Printf("Fetching %d states beginning at %d\n", numStates, int64(from))
-		states := wamp.GetStatesWithClient(client, int(event.Id), event, from, numStates)
+		fmt.Printf("Fetching %d states beginning at %d\n", numStates, int64(from))
+		states := pc.GetStates(int(event.Id), from, numStates)
 		fetches += 1
 		numPackets += len(states)
 		// fmt.Printf("Got %v states\n", len(states))

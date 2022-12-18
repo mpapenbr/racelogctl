@@ -39,13 +39,12 @@ func init() {
 
 func listEvents() {
 	fmt.Printf("Using Realm %s at %s\n", internal.Realm, internal.Url)
-	wamp.GetEvents(func(e *internal.Event, idx int) bool {
-		// fmt.Printf("idx: %v e: %+v\n", idx, e)
-
+	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
+	allEvents, _ := pc.GetEventList()
+	for _, e := range allEvents {
 		printEventOverview(e)
-		return true
 
-	})
+	}
 
 }
 

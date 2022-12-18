@@ -111,7 +111,7 @@ func ProcessDeltaStates(state, incoming internal.State) internal.State {
 	case 1:
 		s = incoming
 		return s
-	case 8:
+	case 2:
 		s.Type = 1
 		s.Timestamp = incoming.Timestamp
 		s.Payload.Cars = PatchCars(state.Payload.Cars, incoming.Payload.Cars)
@@ -135,4 +135,13 @@ func ConvertJsonToGo(jsonData []byte) internal.State {
 	}
 	// fmt.Printf("s: %v\n", s)
 	return s
+}
+
+// extracts the racelogger version from an event. sets it to 0.0.0 if not present
+func GetEventRaceloggerVersion(event *internal.Event) string {
+	sourceVersion := event.Data.Info.RaceloggerVersion
+	if len(sourceVersion) == 0 {
+		sourceVersion = "0.0.0"
+	}
+	return sourceVersion
 }
