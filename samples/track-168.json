@@ -1,0 +1,39 @@
+{
+    "pit": {
+        "exit": 0.06328638643026352,
+        "entry": 0.9942507743835449,
+        "laneLength": 396.95476926863194
+    },
+    "sectors": [
+        {
+            "SectorNum": 0,
+            "SectorStartPct": 0.0
+        },
+        {
+            "SectorNum": 1,
+            "SectorStartPct": 0.175453
+        },
+        {
+            "SectorNum": 2,
+            "SectorStartPct": 0.371582
+        },
+        {
+            "SectorNum": 3,
+            "SectorStartPct": 0.477953
+        },
+        {
+            "SectorNum": 4,
+            "SectorStartPct": 0.624897
+        },
+        {
+            "SectorNum": 5,
+            "SectorStartPct": 0.814373
+        }
+    ],
+    "trackId": 168,
+    "trackLength": 5750.0,
+    "trackPitSpeed": 80.0,
+    "trackConfigName": "Grand Prix",
+    "trackDisplayName": "Suzuka International Racing Course",
+    "trackDisplayShortName": "Suzuka"
+}

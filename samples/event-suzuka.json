@@ -1,0 +1,133 @@
+{
+  "eventKey": "6eca73bbfacda666891d7d2c074f4b09",
+  "name": "Suzuka 10h",
+  "description": "TopSplit",
+  "recordDate": "2022-11-12T13:40:48.277736",
+  "data": {
+    "info": {
+      "raceloggerVersion": "0.5.2",
+      "name": "Suzuka 10h",
+      "description": "TopSplit",
+      "eventTime": "2022-08-20T08:00:00",
+      "trackId": 168,
+      "trackDisplayName": "Suzuka International Racing Course",
+      "trackDisplayShortName": "Suzuka",
+      "trackConfigName": "Grand Prix",
+      "trackLength": 5750,
+      "trackPitSpeed": 80,
+      "multiClass": false,
+      "teamRacing": 1,
+      "irSessionId": 191383580,
+      "numCarTypes": 9,
+      "numCarClasses": 1,
+      "speedmapInterval": 15,
+      "sectors": [
+        {
+          "SectorNum": 0,
+          "SectorStartPct": 0
+        },
+        {
+          "SectorNum": 1,
+          "SectorStartPct": 0.175453
+        },
+        {
+          "SectorNum": 2,
+          "SectorStartPct": 0.371582
+        },
+        {
+          "SectorNum": 3,
+          "SectorStartPct": 0.477953
+        },
+        {
+          "SectorNum": 4,
+          "SectorStartPct": 0.624897
+        },
+        {
+          "SectorNum": 5,
+          "SectorStartPct": 0.814373
+        }
+      ],
+      "sessions": [
+        {
+          "num": 0,
+          "laps": -1,
+          "name": "PRACTICE",
+          "time": 1800,
+          "type": "Practice"
+        },
+        {
+          "num": 1,
+          "laps": 2,
+          "name": "QUALIFY",
+          "time": 480,
+          "type": "Lone Qualify"
+        },
+        {
+          "num": 2,
+          "laps": -1,
+          "name": "RACE",
+          "time": 36000,
+          "type": "Race"
+        }
+      ]
+    },
+    "replayInfo": {
+      "minTimestamp": 1668256848.3337584,
+      "minSessionTime": 128.66666666864805,
+      "maxSessionTime": 36307.916666996694
+    },
+    "manifests": {
+      "car": [
+        "state",
+        "carIdx",
+        "carNum",
+        "userName",
+        "teamName",
+        "car",
+        "pos",
+        "pic",
+        "lap",
+        "lc",
+        "gap",
+        "interval",
+        "trackPos",
+        "speed",
+        "dist",
+        "pitstops",
+        "stintLap",
+        "last",
+        "best",
+        "s1",
+        "s2",
+        "s3",
+        "s4",
+        "s5",
+        "s6"
+      ],
+      "session": [
+        "sessionNum",
+        "sessionTime",
+        "timeRemain",
+        "lapsRemain",
+        "flagState",
+        "timeOfDay",
+        "airTemp",
+        "airDensity",
+        "airPressure",
+        "trackTemp",
+        "windDir",
+        "windVel"
+      ],
+      "message": [
+        "type",
+        "subType",
+        "carIdx",
+        "carNum",
+        "carClass",
+        "msg"
+      ],
+      "pit": []
+    }
+  },
+  "id": 63
+}

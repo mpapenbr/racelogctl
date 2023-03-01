@@ -69,10 +69,14 @@ func register() {
 	registerMsg := internal.RegisterMessage{}
 	if len(internal.SampleFile) > 0 {
 		event := &internal.Event{}
-		json.Unmarshal(readSampleFile(internal.SampleFile), &event)
+		json.Unmarshal(readSampleEvemt(internal.SampleFile), &event)
 		registerMsg.EventKey = event.EventKey
 		registerMsg.Manifests = event.Data.Manifests
 		registerMsg.Info = event.Data.Info
+		trackBytes := readSampleTrack(fmt.Sprintf("samples/track-%d.json", event.Data.Info.TrackId))
+		if trackBytes != nil {
+			json.Unmarshal(trackBytes, &registerMsg.TrackInfo)
+		}
 
 	} else {
 		// find some dummy values here
@@ -90,7 +94,18 @@ func register() {
 	}
 }
 
-func readSampleFile(filename string) []byte {
+func readSampleEvemt(filename string) []byte {
+	jsonFile, err := os.Open(filename)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	defer jsonFile.Close()
+	ret, _ := ioutil.ReadAll(jsonFile)
+	return ret
+}
+
+func readSampleTrack(filename string) []byte {
 	jsonFile, err := os.Open(filename)
 	if err != nil {
 		fmt.Println(err)
