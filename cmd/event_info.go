@@ -97,7 +97,7 @@ func eventInfo(id int) {
 }
 
 func printEvent(e *internal.Event) {
-	recDate, _ := time.Parse("2006-01-02T15:04:05", e.RecordDate)
+	recDate, _ := time.Parse("2006-01-02T15:04:05Z", e.RecordDate)
 	time.Unix(int64(e.Data.ReplayInfo.MinTimestamp), 0)
 	minSession, _ := time.ParseDuration(fmt.Sprintf("%.0fs", e.Data.ReplayInfo.MinSessionTime))
 	maxSession, _ := time.ParseDuration(fmt.Sprintf("%.0fs", e.Data.ReplayInfo.MaxSessionTime))

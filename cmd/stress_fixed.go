@@ -60,6 +60,8 @@ func init() {
 
 	fixedCmd.Flags().StringVar(&eventKey, "eventKey", "", "sets the event key")
 
+	fixedCmd.Flags().StringVar(&internal.SourceUrl, "source-url", "", "sets the url of the source server")
+
 }
 
 func simulateLiveRecording() {
@@ -68,9 +70,21 @@ func simulateLiveRecording() {
 		return
 
 	}
-	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
-	defer pc.Close()
-	event, err := pc.GetEvent(sourceEventId)
+
+	var sourcePc *wamp.PublicClient
+	var destPc *wamp.PublicClient
+
+	if len(internal.SourceUrl) != 0 {
+		sourcePc = wamp.NewPublicClient(internal.SourceUrl, internal.Realm)
+		destPc = wamp.NewPublicClient(internal.Url, internal.Realm)
+		defer destPc.Close()
+	} else {
+		sourcePc = wamp.NewPublicClient(internal.Url, internal.Realm)
+		destPc = sourcePc
+	}
+
+	defer sourcePc.Close()
+	event, err := sourcePc.GetEvent(sourceEventId)
 	if err != nil {
 		log.Fatalf("Error getting event: %v\n", err)
 	}
@@ -99,7 +113,7 @@ func simulateLiveRecording() {
 	defer dpc.Close()
 	producerDone := make(chan bool)
 	// create producer
-	go simulateRacelogger(event, registerMsg.EventKey, producerDone)
+	go simulateRacelogger(sourcePc, event, registerMsg.EventKey, producerDone)
 
 	// create live consumer
 	// wg := sync.WaitGroup{}
@@ -149,9 +163,7 @@ func simulateBrowserListener(idx int, eventKey string) {
 	log.Printf("subsriber %d finished\n", idx)
 }
 
-func simulateRacelogger(event *internal.Event, recordingEventKey string, done chan bool) {
-	pc := wamp.NewPublicClient(internal.Url, internal.Realm)
-	defer pc.Close()
+func simulateRacelogger(pc *wamp.PublicClient, event *internal.Event, recordingEventKey string, done chan bool) {
 
 	fetches := 0
 	numPackets := 0

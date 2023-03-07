@@ -80,6 +80,10 @@ func (pc *PublicClient) GetEvent(eventId int) (*internal.Event, error) {
 		return nil, err
 	}
 
+	if len(result.Arguments) == 0 {
+		return nil, fmt.Errorf("no data for eventId %d", eventId)
+	}
+
 	ret, _ := wamp.AsDict(result.Arguments[0])
 	if len(ret) == 0 {
 		return nil, fmt.Errorf("no data for eventId %d", eventId)
@@ -97,6 +101,10 @@ func (pc *PublicClient) GetEventByKey(eventKey string) (*internal.Event, error) 
 	result, err := pc.client.Call(ctx, "racelog.public.get_event_info_by_key", nil, wamp.List{eventKey}, nil, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(result.Arguments) == 0 {
+		return nil, fmt.Errorf("no data for eventKey %s", eventKey)
 	}
 
 	ret, _ := wamp.AsDict(result.Arguments[0])

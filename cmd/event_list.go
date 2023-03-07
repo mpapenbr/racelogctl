@@ -53,7 +53,7 @@ func printEventOverview(e *internal.Event) {
 }
 
 func composeEventOverview(e *internal.Event) string {
-	recDate, err := time.Parse("2006-01-02T15:04:05", e.RecordDate)
+	recDate, err := time.Parse("2006-01-02T15:04:05Z", e.RecordDate)
 	if err != nil {
 		fmt.Println(err)
 	}
