@@ -169,7 +169,8 @@ func raceloggerWorker(idx int, requestChan chan *TimedJobRequest, resultChan cha
 			currentStateIdx := 0
 			currentSpeedmapIdx := 0
 			log.Printf("Worker %d got job %v\n", idx, job.output())
-			registerMsg := createRegisterMessage(job.eventSource)
+			trackInfo, _ := pc.GetTrack(job.eventSource.Data.Info.TrackId)
+			registerMsg := createRegisterMessage(job.eventSource, trackInfo)
 			dataprovider.RegisterProvider(registerMsg)
 			recordingEventKey := registerMsg.EventKey
 			stateChannel := make(chan internal.State)
@@ -246,13 +247,14 @@ func raceloggerWorker(idx int, requestChan chan *TimedJobRequest, resultChan cha
 	}
 }
 
-func createRegisterMessage(event *internal.Event) internal.RegisterMessage {
+func createRegisterMessage(event *internal.Event, trackInfo *internal.TrackInfo) internal.RegisterMessage {
 	registerMsg := internal.RegisterMessage{}
 
 	registerMsg.Manifests = event.Data.Manifests
 	registerMsg.Info = event.Data.Info
 	registerMsg.RecordDate = float64(time.Now().Unix())
 	registerMsg.Info.Name = fmt.Sprintf("stresstest-%s", time.Now().Format("20060102-150405"))
+	registerMsg.TrackInfo = *trackInfo
 	h := md5.New()
 	io.WriteString(h, registerMsg.Info.Name)
 	io.WriteString(h, uuid.New().String())
