@@ -160,7 +160,7 @@ func simulateLiveListener(idx int, eventKey string, queue chan int) {
 		msgNum++
 		// eventData, b := nexusWamp.AsList(event.Arguments[0])
 
-		log.Printf("Listener %d - Event data for topic %s: msgNum %d \n", idx, eventKey, msgNum)
+		// log.Printf("Listener %d - Event data for topic %s: msgNum %d \n", idx, eventKey, msgNum)
 		// log.Printf("Event: %+v\n", event)
 
 	}
