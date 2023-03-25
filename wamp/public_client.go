@@ -168,9 +168,12 @@ func (pc *PublicClient) GetStates(id int, start float64, num int) []internal.Sta
 		return nil
 	}
 
+	resultStates := make([]internal.State, 0)
+	if len(result.Arguments) == 0 {
+		return resultStates
+	}
 	ret, _ := wamp.AsList(result.Arguments[0])
 	lastState := internal.State{}
-	resultStates := make([]internal.State, 0)
 	for j := range ret {
 		s := internal.State{Payload: internal.Payload{}}
 		jsonData, _ := json.Marshal(ret[j])
