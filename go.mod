@@ -7,7 +7,7 @@ require (
 	github.com/gammazero/nexus/v3 v3.2.1
 	github.com/google/uuid v1.4.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.17.0
 )
