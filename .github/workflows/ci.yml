@@ -26,5 +26,5 @@ jobs:
     - name: Run GoReleaser
       uses: goreleaser/goreleaser-action@v5
       with:
-        args: release --snapshot --skip-publish --rm-dist
+        args: release --snapshot --skip=publish --clean
     
