@@ -24,3 +24,4 @@ dist/
 .gitconfig.local*
 .racelogctl.yml
 .npmrc
+.*.yml

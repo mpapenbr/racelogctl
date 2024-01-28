@@ -22,10 +22,14 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
+	"strings"
+
 	"racelogctl/internal"
 	"racelogctl/wamp"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/mod/semver"
 )
 
 // stressCmd represents the stress command
@@ -47,13 +51,23 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	stressCmd.PersistentFlags().IntVarP(&internal.Worker, "worker", "w", 1, "Number of workers to use")
+	stressCmd.PersistentFlags().StringVar(&internal.RaceloggerVersion, "racelogger-version", "v0.6.0", "Minimum version of racelogger to be used for stress tests")
 }
 
 // helper functions here
 
 func raceLoggerVersion(e *internal.Event) bool {
-	return len(e.Data.Info.RaceloggerVersion) > 0
+	minVersion := internal.RaceloggerVersion
+	if !strings.HasPrefix(minVersion, "v") {
+		minVersion = "v" + minVersion
+	}
+	toCheck := e.Data.Info.RaceloggerVersion
+	if !strings.HasPrefix(toCheck, "v") {
+		toCheck = "v" + toCheck
+	}
+	return len(e.Data.Info.RaceloggerVersion) > 0 && semver.Compare(toCheck, minVersion) >= 0
 }
+
 func isMinSessionLength(e *internal.Event, minSessionLengthMinutes int) bool {
 	return (e.Data.ReplayInfo.MaxSessionTime - e.Data.ReplayInfo.MinSessionTime) > float64(minSessionLengthMinutes*60)
 }
@@ -68,6 +82,6 @@ func computeAvailableEvents(pc *wamp.PublicClient, minSessionLengthMinutes int) 
 			printEventOverview(event)
 		}
 	}
+	fmt.Printf("%v\n", availableEvents)
 	return availableEvents
-	// fmt.Printf("%v\n", availableEvents)
 }
