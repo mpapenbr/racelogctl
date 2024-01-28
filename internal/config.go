@@ -23,5 +23,6 @@ var (
 	Interval                   int    // the interval (in seconds) used for average laps over time computation
 	SourceUrl                  string // the target url for event copy
 	TargetDataproviderPassword string // the dataprovider password of the target when copying an event
+	RaceloggerVersion          string // minimum version of racelogger to be used for stress tests
 
 )
